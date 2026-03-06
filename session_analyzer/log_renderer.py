@@ -52,10 +52,15 @@ def _render_content_block(block: ContentBlock, agent_link_map: dict[str, str]) -
         return f'<p class="log-text">{escaped}</p>'
 
     if isinstance(block, ThinkingBlock):
-        summary_text = _esc(block.thinking[:80].replace("\n", " "))
+        if block.thinking:
+            summary_text = _esc(block.thinking[:80].replace("\n", " "))
+            content_html = _esc(block.thinking)
+        else:
+            summary_text = "（暗号化済み）"
+            content_html = '<em style="color:var(--color-text-muted)">この思考ブロックは暗号化されています。</em>'
         return f"""<details class="log-thinking">
-  <summary>思考: {summary_text}…</summary>
-  <div class="thinking-content">{_esc(block.thinking)}</div>
+  <summary>思考: {summary_text}</summary>
+  <div class="thinking-content">{content_html}</div>
 </details>"""
 
     if isinstance(block, ToolUseBlock):

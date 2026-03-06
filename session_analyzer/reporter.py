@@ -225,6 +225,10 @@ details {
     overflow: hidden;
 }
 
+details[open] {
+    overflow: visible;
+}
+
 summary {
     padding: 10px 14px;
     cursor: pointer;
@@ -235,6 +239,17 @@ summary {
     align-items: center;
     gap: 8px;
     user-select: none;
+}
+
+summary::before {
+    content: '▶';
+    font-size: 0.7rem;
+    transition: transform 0.15s;
+    flex-shrink: 0;
+}
+
+details[open] > summary::before {
+    transform: rotate(90deg);
 }
 
 summary:hover {
@@ -385,7 +400,6 @@ code {
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
     margin: 4px 0;
-    overflow: hidden;
 }
 
 .log-tool-use.agent-launch {
@@ -414,7 +428,6 @@ code {
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
     margin: 4px 0;
-    overflow: hidden;
 }
 
 .tool-input {
@@ -788,16 +801,21 @@ def _render_thinking_section(report: SessionReport) -> str:
 
     items = ""
     for entry in report.thinking.entries:
-        summary_text = _esc(entry.content[:100].replace("\n", " "))
+        if entry.content:
+            summary_text = _esc(entry.content[:100].replace("\n", " ")) + "…"
+            content_html = _esc(entry.content)
+        else:
+            summary_text = "（暗号化済み）"
+            content_html = '<em style="color:var(--color-text-muted)">この思考ブロックは暗号化されています。</em>'
         log_link = f'<a class="log-link" href="javascript:void(0)" onclick="goToLogEntry(\'entry-{_esc(entry.message_uuid)}\')">→ ログ詳細</a>'
         items += f"""
     <details>
         <summary>
-            <span>{summary_text}…</span>
+            <span>{summary_text}</span>
             <span class="meta-label">{_esc(entry.source)} / {_esc(entry.timestamp)}</span>
             {log_link}
         </summary>
-        <div class="thinking-content">{_esc(entry.content)}</div>
+        <div class="thinking-content">{content_html}</div>
     </details>"""
 
     return f'<div class="card"><h2>思考ログ一覧</h2>{items}</div>'
