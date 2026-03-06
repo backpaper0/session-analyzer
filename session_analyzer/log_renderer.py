@@ -131,7 +131,9 @@ def _render_entry(entry: LogEntry, agent_link_map: dict[str, str]) -> str:
   <div class="log-text-content log-text-md">{md_html}</div>
 </details>"""
             else:
-                content_html = f'<div class="log-text-md">{_render_markdown(entry.content)}</div>'
+                content_html = (
+                    f'<div class="log-text-md">{_render_markdown(entry.content)}</div>'
+                )
         else:
             content_html = "".join(
                 _render_content_block(b, agent_link_map) for b in entry.content

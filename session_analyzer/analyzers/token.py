@@ -66,7 +66,6 @@ class TokenAnalyzer:
         for sub_entries in session.subagent_entries.values():
             all_entries.extend(sub_entries)
 
-        has_unknown = False
         for entry in all_entries:
             if not isinstance(entry, AssistantEntry):
                 continue
@@ -75,8 +74,6 @@ class TokenAnalyzer:
             c[1] += entry.usage.output_tokens
             c[2] += entry.usage.cache_creation_input_tokens
             c[3] += entry.usage.cache_read_input_tokens
-            if entry.model not in PRICING:
-                has_unknown = True
 
         by_model: list[TokenUsageStats] = []
         total_input = total_output = total_cache_create = total_cache_read = 0

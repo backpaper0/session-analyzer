@@ -247,7 +247,9 @@ class TestHtmlReporterLogDetailStyle:
         assert "showAllLogEntries" in out.read_text()
 
 
-def test_session_data_script_tag_not_broken_by_script_closing_tag(tmp_path: Path) -> None:
+def test_session_data_script_tag_not_broken_by_script_closing_tag(
+    tmp_path: Path,
+) -> None:
     """SESSION_DATA に </script> が含まれても script 要素が早期終了しない"""
     report = _make_session_report(session_id="test</script>xss")
     out = tmp_path / "out.html"
