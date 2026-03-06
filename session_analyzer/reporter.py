@@ -466,6 +466,34 @@ code {
     background: var(--color-warn-light);
     color: #6b5900;
 }
+
+.log-text-content {
+    padding: 14px 16px;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.log-tool-result-content {
+    padding: 14px 16px;
+    font-size: 0.85rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.log-tool-result-collapsible.tool-result-error > summary {
+    color: var(--color-error);
+}
 """
 
 _JS = """

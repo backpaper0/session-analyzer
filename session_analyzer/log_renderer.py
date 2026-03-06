@@ -21,6 +21,13 @@ _SUBAGENT_TOOL_NAMES = {"Task", "Agent"}
 # 1,000 件超時の初期表示件数
 _MAX_INITIAL_ENTRIES = 200
 
+# 折りたたみ閾値（この行数以上で折りたたみ表示）
+_LONG_CONTENT_LINES = 5
+
+
+def _is_long(text: str) -> bool:
+    return text.count("\n") >= _LONG_CONTENT_LINES
+
 
 def _esc(text: str) -> str:
     """XSS 防止のための HTML エスケープ"""
@@ -35,7 +42,14 @@ def _esc(text: str) -> str:
 def _render_content_block(block: ContentBlock, agent_link_map: dict[str, str]) -> str:
     """ContentBlock バリアント別 HTML 生成"""
     if isinstance(block, TextBlock):
-        return f'<p class="log-text">{_esc(block.text)}</p>'
+        escaped = _esc(block.text)
+        if _is_long(block.text):
+            summary = _esc(block.text.split("\n")[0][:80])
+            return f"""<details class="log-text-collapsible">
+  <summary>テキスト: {summary}…</summary>
+  <div class="log-text-content">{escaped}</div>
+</details>"""
+        return f'<p class="log-text">{escaped}</p>'
 
     if isinstance(block, ThinkingBlock):
         summary_text = _esc(block.thinking[:80].replace("\n", " "))
@@ -61,7 +75,15 @@ def _render_content_block(block: ContentBlock, agent_link_map: dict[str, str]) -
     if isinstance(block, ToolResultBlock):
         error_class = " tool-result-error" if block.is_error else ""
         error_badge = '<span class="badge badge-failure">エラー</span> ' if block.is_error else ""
-        return f'<div class="log-tool-result{error_class}">{error_badge}<span class="tool-result-content">{_esc(block.content)}</span></div>'
+        content_escaped = _esc(block.content)
+        if _is_long(block.content):
+            label = "エラー結果" if block.is_error else "ツール結果"
+            summary_text = _esc(block.content.split("\n")[0][:80])
+            return f"""<details class="log-tool-result-collapsible{error_class}">
+  <summary>{error_badge}{label}: {summary_text}…</summary>
+  <div class="log-tool-result-content">{content_escaped}</div>
+</details>"""
+        return f'<div class="log-tool-result{error_class}">{error_badge}<span class="tool-result-content">{content_escaped}</span></div>'
 
     return ""
 
@@ -80,7 +102,14 @@ def _render_entry(entry: LogEntry, agent_link_map: dict[str, str]) -> str:
         meta_badge = ' <span class="badge badge-meta">meta</span>' if entry.is_meta else ""
         meta_html = meta_badge
         if isinstance(entry.content, str):
-            content_html = f'<p class="log-text">{_esc(entry.content)}</p>'
+            if _is_long(entry.content):
+                summary = _esc(entry.content.split("\n")[0][:80])
+                content_html = f"""<details class="log-text-collapsible">
+  <summary>テキスト: {summary}…</summary>
+  <div class="log-text-content">{_esc(entry.content)}</div>
+</details>"""
+            else:
+                content_html = f'<p class="log-text">{_esc(entry.content)}</p>'
         else:
             content_html = "".join(_render_content_block(b, agent_link_map) for b in entry.content)
 
