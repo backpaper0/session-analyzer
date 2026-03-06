@@ -258,6 +258,20 @@ class TestRenderEntry:
         assert "role-user" in html
         assert "role-assistant" in html
 
+    def test_entry_has_id_attribute_with_uuid(self):
+        """各ログエントリに id='entry-{uuid}' 属性が付与される"""
+        entry = _make_assistant([TextBlock(type="text", text="hello")])
+        parsed = _make_parsed(main_entries=[entry])
+        html = render_log_detail_tab(parsed, {})
+        assert 'id="entry-uuid-1"' in html
+
+    def test_user_entry_has_id_attribute_with_uuid(self):
+        """user エントリにも id='entry-{uuid}' 属性が付与される"""
+        entry = _make_user("user message")
+        parsed = _make_parsed(main_entries=[entry])
+        html = render_log_detail_tab(parsed, {})
+        assert 'id="entry-uuid-2"' in html
+
 
 # ---------------------------------------------------------------------------
 # タスク 1.3: エントリリストの表示と 1,000 件超のパフォーマンス対応

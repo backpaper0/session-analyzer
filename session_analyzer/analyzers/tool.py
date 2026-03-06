@@ -45,6 +45,7 @@ class _BashContext:
     command: str
     timestamp: str
     source: str
+    entry_uuid: str
 
 
 class ToolAnalyzer:
@@ -76,6 +77,7 @@ class ToolAnalyzer:
                                 command=str(cmd),
                                 timestamp=entry.timestamp,
                                 source=source,
+                                entry_uuid=entry.uuid,
                             )
                 elif isinstance(entry, UserEntry):
                     if not isinstance(entry.content, list):
@@ -96,6 +98,7 @@ class ToolAnalyzer:
                 error_message=error_msg,
                 timestamp=ctx.timestamp,
                 source=ctx.source,
+                entry_uuid=ctx.entry_uuid,
             ))
 
         # bash_aggregation を構築

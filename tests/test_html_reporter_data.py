@@ -78,6 +78,7 @@ def _make_report() -> SessionReport:
                 error_message=None,
                 timestamp="2026-03-06T00:00:00Z",
                 source="main",
+                entry_uuid="entry-uuid-bash-1",
             ),
             BashInvocation(
                 command="npm run fail",
@@ -85,6 +86,7 @@ def _make_report() -> SessionReport:
                 error_message="Command failed: npm run fail",
                 timestamp="2026-03-06T00:01:00Z",
                 source="main",
+                entry_uuid="entry-uuid-bash-2",
             ),
         ],
         bash_aggregation=[

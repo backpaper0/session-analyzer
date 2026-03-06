@@ -249,3 +249,18 @@ def test_analyze_bash_shlex_parse_error_handled():
     result = ToolAnalyzer().analyze(_make_session(entries))
     # エラーにならずにbash_invocationsに記録されること
     assert len(result.bash_invocations) == 1
+
+
+def test_analyze_bash_invocation_entry_uuid():
+    """BashInvocationにassistantエントリのuuidが設定されること"""
+    assistant = AssistantEntry(
+        uuid="entry-uuid-abc",
+        parent_uuid=None,
+        timestamp="2024-01-01T00:00:00Z",
+        model="claude-sonnet-4-6",
+        content=[_tool_use("t1", "Bash", "ls")],
+        usage=UsageData(),
+        agent_id=None,
+    )
+    result = ToolAnalyzer().analyze(_make_session([assistant]))
+    assert result.bash_invocations[0].entry_uuid == "entry-uuid-abc"

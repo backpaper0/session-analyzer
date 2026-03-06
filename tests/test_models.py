@@ -177,9 +177,11 @@ def test_bash_invocation():
         error_message=None,
         timestamp="2024-01-01T00:00:00Z",
         source="main",
+        entry_uuid="uuid-123",
     )
     assert inv.command == "ls -la"
     assert inv.is_error is False
+    assert inv.entry_uuid == "uuid-123"
 
 
 def test_command_aggregation():

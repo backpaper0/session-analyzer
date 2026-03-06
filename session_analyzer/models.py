@@ -142,6 +142,7 @@ class BashInvocation:
     error_message: str | None
     timestamp: str
     source: str            # "main" or agent_id
+    entry_uuid: str        # Bash ToolUseBlock を含む AssistantEntry.uuid
 
 
 @dataclass

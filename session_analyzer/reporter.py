@@ -494,6 +494,18 @@ code {
 .log-tool-result-collapsible.tool-result-error > summary {
     color: var(--color-error);
 }
+
+.log-link {
+    font-size: 0.8rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.log-link:hover {
+    text-decoration: underline;
+}
 """
 
 _JS = """
@@ -504,6 +516,16 @@ function showTab(id) {
     document.querySelectorAll('.tab-panel').forEach(function(panel) {
         panel.classList.toggle('active', panel.id === id);
     });
+}
+
+function goToLogEntry(anchorId) {
+    showTab('tab-log');
+    var el = document.getElementById(anchorId);
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        el.style.outline = '2px solid var(--color-primary)';
+        setTimeout(function() { el.style.outline = ''; }, 1500);
+    }
 }
 
 function showAllLogEntries(btn) {
@@ -588,15 +610,17 @@ def _render_skills_section(report: SessionReport) -> str:
     rows = ""
     for inv in report.skills.invocations:
         method_cls = "skill-llm" if "LLM" in inv.method else "skill-user"
+        log_link = f'<a class="log-link" href="javascript:void(0)" onclick="goToLogEntry(\'entry-{_esc(inv.uuid)}\')">→ ログ詳細</a>'
         rows += f"""
         <tr>
             <td><code>{_esc(inv.skill_name)}</code></td>
             <td><span class="{method_cls}">{_esc(inv.method)}</span></td>
             <td class="meta-label">{_esc(inv.timestamp)}</td>
+            <td>{log_link}</td>
         </tr>"""
 
     if not rows:
-        rows = '<tr><td colspan="3" class="empty-msg">スキル利用なし</td></tr>'
+        rows = '<tr><td colspan="4" class="empty-msg">スキル利用なし</td></tr>'
 
     summary_rows = ""
     for name, count in sorted(report.skills.summary.items(), key=lambda x: -x[1]):
@@ -617,7 +641,7 @@ def _render_skills_section(report: SessionReport) -> str:
     <div class="card">
         <h2>スキル利用一覧（時系列）</h2>
         <table>
-            <thead><tr><th>スキル名</th><th>起動方法</th><th>タイムスタンプ</th></tr></thead>
+            <thead><tr><th>スキル名</th><th>起動方法</th><th>タイムスタンプ</th><th>ログ詳細</th></tr></thead>
             <tbody>{rows}</tbody>
         </table>
     </div>{summary_html}"""
@@ -654,15 +678,17 @@ def _render_tools_section(report: SessionReport) -> str:
         err_html = ""
         if inv.error_message:
             err_html = f'<br><span class="meta-label">{_esc(inv.error_message[:120])}</span>'
+        log_link = f'<a class="log-link" href="javascript:void(0)" onclick="goToLogEntry(\'entry-{_esc(inv.entry_uuid)}\')">→ ログ詳細</a>'
         bash_rows += f"""
         <tr class="bash-row {status_cls}">
             <td><code>{_esc(inv.command[:200])}</code>{err_html}</td>
             <td><span class="badge {badge_cls}">{badge_label}</span></td>
             <td class="meta-label">{_esc(inv.source)}</td>
             <td class="meta-label">{_esc(inv.timestamp)}</td>
+            <td>{log_link}</td>
         </tr>"""
     if not bash_rows:
-        bash_rows = '<tr><td colspan="4" class="empty-msg">Bash 実行なし</td></tr>'
+        bash_rows = '<tr><td colspan="5" class="empty-msg">Bash 実行なし</td></tr>'
 
     return f"""
     <div class="card">
@@ -682,7 +708,7 @@ def _render_tools_section(report: SessionReport) -> str:
     <div class="card">
         <h2>Bash 実行一覧（時系列）</h2>
         <table>
-            <thead><tr><th>コマンド</th><th>結果</th><th>出所</th><th>タイムスタンプ</th></tr></thead>
+            <thead><tr><th>コマンド</th><th>結果</th><th>出所</th><th>タイムスタンプ</th><th>ログ詳細</th></tr></thead>
             <tbody>{bash_rows}</tbody>
         </table>
     </div>"""
@@ -699,6 +725,7 @@ def _render_subagents_section(report: SessionReport) -> str:
                 f"入力:{t.input_tokens:,} / 出力:{t.output_tokens:,} / コスト:{cost_str}"
             )
         subtype = _esc(agent.subagent_type or "―")
+        log_link = f'<a class="log-link" href="javascript:void(0)" onclick="goToLogEntry(\'subagent-{_esc(agent.agent_id)}\')">→ ログ詳細</a>'
         rows += f"""
         <tr>
             <td class="meta-label">{_esc(agent.agent_id[:12])}…</td>
@@ -707,10 +734,11 @@ def _render_subagents_section(report: SessionReport) -> str:
             <td class="prompt-cell" title="{_esc(agent.prompt)}">{_esc(agent.prompt[:80])}</td>
             <td class="meta-label">{_esc(agent.launched_at)}</td>
             <td class="meta-label">{token_html}</td>
+            <td>{log_link}</td>
         </tr>"""
 
     if not rows:
-        rows = '<tr><td colspan="6" class="empty-msg">サブエージェント起動なし</td></tr>'
+        rows = '<tr><td colspan="7" class="empty-msg">サブエージェント起動なし</td></tr>'
 
     return f"""
     <div class="card">
@@ -718,7 +746,7 @@ def _render_subagents_section(report: SessionReport) -> str:
         <table>
             <thead><tr>
                 <th>エージェント ID</th><th>ツール</th><th>タイプ</th>
-                <th>プロンプト</th><th>起動時刻</th><th>トークン使用量</th>
+                <th>プロンプト</th><th>起動時刻</th><th>トークン使用量</th><th>ログ詳細</th>
             </tr></thead>
             <tbody>{rows}</tbody>
         </table>
@@ -732,11 +760,13 @@ def _render_thinking_section(report: SessionReport) -> str:
     items = ""
     for entry in report.thinking.entries:
         summary_text = _esc(entry.content[:100].replace("\n", " "))
+        log_link = f'<a class="log-link" href="javascript:void(0)" onclick="goToLogEntry(\'entry-{_esc(entry.message_uuid)}\')">→ ログ詳細</a>'
         items += f"""
     <details>
         <summary>
             <span>{summary_text}…</span>
             <span class="meta-label">{_esc(entry.source)} / {_esc(entry.timestamp)}</span>
+            {log_link}
         </summary>
         <div class="thinking-content">{_esc(entry.content)}</div>
     </details>"""

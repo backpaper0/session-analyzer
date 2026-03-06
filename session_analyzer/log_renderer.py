@@ -113,7 +113,7 @@ def _render_entry(entry: LogEntry, agent_link_map: dict[str, str]) -> str:
         else:
             content_html = "".join(_render_content_block(b, agent_link_map) for b in entry.content)
 
-    return f"""<div class="log-entry {role_class}" data-log-entry>
+    return f"""<div id="entry-{_esc(entry.uuid)}" class="log-entry {role_class}" data-log-entry>
   <div class="log-entry-header">
     <span class="log-role-badge">{role_label}</span>
     {meta_html}
