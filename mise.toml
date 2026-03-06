@@ -1,3 +1,20 @@
 [tools]
 python = "3.14"
 uv = "0.9"
+
+[tasks.fix]
+description = "コードフォーマットとlintエラーを自動修正する"
+run = [
+  "uv run ruff format",
+  "uv run ruff check --fix",
+  "uv run ruff check --select I --fix",
+]
+
+[tasks.check]
+description = "コードフォーマット・lint・型チェックを実行する"
+run = [
+  "uv run ruff format --check",
+  "uv run ruff check",
+  "uv run ruff check --select I",
+  "uv run ty check",
+]
