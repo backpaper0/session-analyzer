@@ -1,6 +1,6 @@
 """タスク6.1: argparse による CLI 実装テスト"""
+
 import os
-import sys
 from pathlib import Path
 from unittest.mock import patch
 
@@ -139,7 +139,9 @@ class TestClaudeDirResolution:
             captured.append(claude_dir)
             return output_path
 
-        env_without_config = {k: v for k, v in os.environ.items() if k != "CLAUDE_CONFIG_DIR"}
+        env_without_config = {
+            k: v for k, v in os.environ.items() if k != "CLAUDE_CONFIG_DIR"
+        }
         with patch.dict(os.environ, env_without_config, clear=True):
             with patch(_PIPELINE_TARGET, side_effect=fake_pipeline):
                 main(["abc"])
@@ -173,7 +175,9 @@ class TestExitCodeAndOutput:
             result = main(["abc"])
         assert result == 0
 
-    def test_success_prints_html_path_to_stdout(self, capsys: pytest.CaptureFixture) -> None:
+    def test_success_prints_html_path_to_stdout(
+        self, capsys: pytest.CaptureFixture
+    ) -> None:
         """成功時は HTML ファイルパスを stdout に出力する"""
         expected_path = Path("/tmp/session-abc.html")
         with _mock_pipeline(expected_path):
@@ -187,7 +191,9 @@ class TestExitCodeAndOutput:
             result = main(["abc"])
         assert result == 1
 
-    def test_session_not_found_prints_to_stderr(self, capsys: pytest.CaptureFixture) -> None:
+    def test_session_not_found_prints_to_stderr(
+        self, capsys: pytest.CaptureFixture
+    ) -> None:
         """SessionNotFoundError のメッセージを stderr に出力する"""
         with patch(_PIPELINE_TARGET, side_effect=SessionNotFoundError("abc")):
             main(["abc"])
@@ -203,7 +209,9 @@ class TestExitCodeAndOutput:
             result = main(["abc"])
         assert result == 1
 
-    def test_ambiguous_session_prints_to_stderr(self, capsys: pytest.CaptureFixture) -> None:
+    def test_ambiguous_session_prints_to_stderr(
+        self, capsys: pytest.CaptureFixture
+    ) -> None:
         """AmbiguousSessionError のメッセージを stderr に出力する"""
         with patch(
             _PIPELINE_TARGET,
@@ -213,7 +221,9 @@ class TestExitCodeAndOutput:
         err = capsys.readouterr().err
         assert "abc" in err
 
-    def test_report_generation_error_returns_one(self, capsys: pytest.CaptureFixture) -> None:
+    def test_report_generation_error_returns_one(
+        self, capsys: pytest.CaptureFixture
+    ) -> None:
         """ReportGenerationError 発生時は exit code 1 を返す"""
         with patch(_PIPELINE_TARGET, side_effect=ReportGenerationError("disk full")):
             result = main(["abc"])

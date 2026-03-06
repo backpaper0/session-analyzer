@@ -1,4 +1,5 @@
 """python -m session_analyzer のエントリポイント"""
+
 from __future__ import annotations
 
 import os

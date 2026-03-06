@@ -1,12 +1,14 @@
 """タスク3.2: メインセッションとサブエージェントの統合テスト"""
+
 import json
-import pytest
 from pathlib import Path
 
-from session_analyzer.parser import LogParser
 from session_analyzer.models import (
-    AssistantEntry, UserEntry, ParsedSession, SessionFiles,
+    AssistantEntry,
+    ParsedSession,
+    SessionFiles,
 )
+from session_analyzer.parser import LogParser
 
 
 def _write_jsonl(path: Path, entries: list[dict]) -> None:
@@ -22,8 +24,12 @@ def _make_assistant(uuid: str = "uuid-a1", agent_id: str | None = None) -> dict:
         "message": {
             "model": "claude-sonnet-4-6",
             "content": [{"type": "text", "text": "OK"}],
-            "usage": {"input_tokens": 10, "output_tokens": 5,
-                      "cache_creation_input_tokens": 0, "cache_read_input_tokens": 0},
+            "usage": {
+                "input_tokens": 10,
+                "output_tokens": 5,
+                "cache_creation_input_tokens": 0,
+                "cache_read_input_tokens": 0,
+            },
         },
     }
     if agent_id:
@@ -43,6 +49,7 @@ def _make_user(uuid: str = "uuid-u1", is_meta: bool = False) -> dict:
 
 
 # --- parse() の基本動作 ---
+
 
 def test_parse_returns_parsed_session(tmp_path):
     """parse()がParsedSessionを返すこと"""
@@ -89,6 +96,7 @@ def test_parse_no_subagents(tmp_path):
 
 
 # --- サブエージェントの統合 ---
+
 
 def test_parse_subagent_entries_keyed_by_agent_id(tmp_path):
     """サブエージェントのエントリがagentIdをキーとして格納されること"""

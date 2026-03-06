@@ -1,21 +1,17 @@
 """タスク6.2: SessionAnalyzer オーケストレーターテスト"""
+
 from pathlib import Path
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
-from session_analyzer.exceptions import SessionNotFoundError
 from session_analyzer.models import (
     AssistantEntry,
-    BashInvocation,
-    CommandAggregation,
-    InvocationMethod,
     ParsedSession,
     SessionFiles,
     SessionReport,
     SkillReport,
     SubAgentReport,
-    TextBlock,
     ThinkingReport,
     TokenReport,
     TokenUsageStats,
@@ -39,8 +35,12 @@ def _make_parsed_session() -> ParsedSession:
 
 def _make_session_report() -> SessionReport:
     total = TokenUsageStats(
-        model="total", input_tokens=0, output_tokens=0,
-        cache_creation_tokens=0, cache_read_tokens=0, estimated_cost_usd=0.0,
+        model="total",
+        input_tokens=0,
+        output_tokens=0,
+        cache_creation_tokens=0,
+        cache_read_tokens=0,
+        estimated_cost_usd=0.0,
     )
     return SessionReport(
         session_id="abc",
@@ -140,7 +140,9 @@ class TestPipelineOrchestration:
 
         return mocks
 
-    def test_discovery_called_with_session_id_and_claude_dir(self, tmp_path: Path) -> None:
+    def test_discovery_called_with_session_id_and_claude_dir(
+        self, tmp_path: Path
+    ) -> None:
         """LogDiscovery.discover() が session_id と claude_dir で呼ばれる"""
         mocks = self._run_with_mocks(tmp_path)
         mocks["discovery"].discover.assert_called_once_with("abc", tmp_path)
@@ -224,7 +226,9 @@ class TestSessionReportAssembly:
 # -----------------------------------------------------------------------
 
 
-def _make_assistant_entry(blocks: list, timestamp: str = "2026-01-01T00:00:00Z") -> AssistantEntry:
+def _make_assistant_entry(
+    blocks: list, timestamp: str = "2026-01-01T00:00:00Z"
+) -> AssistantEntry:
     """テスト用 AssistantEntry を生成するヘルパー"""
     return AssistantEntry(
         uuid="uuid-test",
@@ -288,7 +292,9 @@ class TestBuildAgentLinkMap:
     def test_non_subagent_tools_not_in_map(self) -> None:
         """Agent および Task 以外のツール呼び出しがマッピングに含まれない"""
         bash_block = ToolUseBlock(type="tool_use", id="id-bash", name="Bash", input={})
-        agent_block = ToolUseBlock(type="tool_use", id="id-agent", name="Agent", input={})
+        agent_block = ToolUseBlock(
+            type="tool_use", id="id-agent", name="Agent", input={}
+        )
         read_block = ToolUseBlock(type="tool_use", id="id-read", name="Read", input={})
         entry = _make_assistant_entry([bash_block, agent_block, read_block])
         parsed = ParsedSession(
@@ -336,10 +342,16 @@ class TestBuildAgentLinkMap:
             parent_uuid=None,
             timestamp="2026-01-01T00:00:00Z",
             is_meta=False,
-            content=[ToolUseBlock(type="tool_use", id="id-user-block", name="Agent", input={})],
+            content=[
+                ToolUseBlock(
+                    type="tool_use", id="id-user-block", name="Agent", input={}
+                )
+            ],
             agent_id=None,
         )
-        agent_block = ToolUseBlock(type="tool_use", id="id-assistant", name="Agent", input={})
+        agent_block = ToolUseBlock(
+            type="tool_use", id="id-assistant", name="Agent", input={}
+        )
         assistant_entry = _make_assistant_entry([agent_block])
         parsed = ParsedSession(
             session_id="s7",

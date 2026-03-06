@@ -1,13 +1,12 @@
 """タスク2.1: JSONL ファイルの再帰探索と環境変数対応のテスト"""
-import os
+
 import pytest
-from pathlib import Path
 
 from session_analyzer.discovery import LogDiscovery
 from session_analyzer.exceptions import SessionNotFoundError
 
-
 # --- 再帰スキャン ---
+
 
 def test_scan_finds_jsonl_files(tmp_path):
     """projects/配下のJSONLファイルを発見できること"""
@@ -80,6 +79,7 @@ def test_scan_multiple_files(tmp_path):
 
 # --- ルートディレクトリ解決 ---
 
+
 def test_get_root_dir_default(monkeypatch, tmp_path):
     """CLAUDE_CONFIG_DIRが未設定の場合は$HOME/.claudeを使用すること"""
     monkeypatch.delenv("CLAUDE_CONFIG_DIR", raising=False)
@@ -110,6 +110,7 @@ def test_get_root_dir_explicit_override(monkeypatch, tmp_path):
 
 
 # --- SessionNotFoundError ---
+
 
 def test_discover_raises_when_no_jsonl_files(tmp_path):
     """JONLファイルが一切存在しない場合はSessionNotFoundErrorを送出すること"""

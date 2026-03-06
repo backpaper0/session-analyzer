@@ -1,4 +1,5 @@
 """トークン使用量とコスト推定アナライザー"""
+
 from __future__ import annotations
 
 from collections import defaultdict
@@ -35,8 +36,13 @@ PRICING: dict[str, dict[str, float]] = {
 _MTOK = 1_000_000.0
 
 
-def _calc_cost(model: str, input_tokens: int, output_tokens: int,
-               cache_creation: int, cache_read: int) -> float | None:
+def _calc_cost(
+    model: str,
+    input_tokens: int,
+    output_tokens: int,
+    cache_creation: int,
+    cache_read: int,
+) -> float | None:
     """既知モデルの料金を計算する。未知モデルは None を返す。"""
     pricing = PRICING.get(model)
     if pricing is None:
@@ -78,14 +84,16 @@ class TokenAnalyzer:
 
         for model, (inp, out, cc, cr) in counters.items():
             cost = _calc_cost(model, inp, out, cc, cr)
-            by_model.append(TokenUsageStats(
-                model=model,
-                input_tokens=inp,
-                output_tokens=out,
-                cache_creation_tokens=cc,
-                cache_read_tokens=cr,
-                estimated_cost_usd=cost,
-            ))
+            by_model.append(
+                TokenUsageStats(
+                    model=model,
+                    input_tokens=inp,
+                    output_tokens=out,
+                    cache_creation_tokens=cc,
+                    cache_read_tokens=cr,
+                    estimated_cost_usd=cost,
+                )
+            )
             total_input += inp
             total_output += out
             total_cache_create += cc

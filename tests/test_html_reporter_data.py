@@ -1,8 +1,7 @@
 """タスク5.2: 各セクションのデータ描画テスト"""
+
 import json
 from pathlib import Path
-
-import pytest
 
 from session_analyzer.models import (
     BashInvocation,
@@ -138,6 +137,7 @@ def _make_report() -> SessionReport:
 # JSON埋め込みテスト
 # -----------------------------------------------------------------------
 
+
 class TestJsonEmbedding:
     def test_session_data_is_embedded_as_json(self, tmp_path: Path) -> None:
         """SESSION_DATA という JS 変数にJSONが埋め込まれている"""
@@ -176,6 +176,7 @@ class TestJsonEmbedding:
 # トークンセクション
 # -----------------------------------------------------------------------
 
+
 class TestTokenSection:
     def test_model_name_appears(self, tmp_path: Path) -> None:
         """モデル名がトークンセクションに表示される"""
@@ -201,7 +202,8 @@ class TestTokenSection:
 
     def test_na_for_unknown_model(self, tmp_path: Path) -> None:
         """未知モデルのコストはN/Aと表示される"""
-        from session_analyzer.models import TokenReport, TokenUsageStats, SessionReport
+        from session_analyzer.models import TokenUsageStats
+
         report = _make_report()
         report.token.by_model.append(
             TokenUsageStats(
@@ -222,6 +224,7 @@ class TestTokenSection:
 # -----------------------------------------------------------------------
 # スキルセクション
 # -----------------------------------------------------------------------
+
 
 class TestSkillsSection:
     def test_skill_name_appears(self, tmp_path: Path) -> None:
@@ -251,6 +254,7 @@ class TestSkillsSection:
 # -----------------------------------------------------------------------
 # ツールセクション
 # -----------------------------------------------------------------------
+
 
 class TestToolsSection:
     def test_tool_counts_appear(self, tmp_path: Path) -> None:
@@ -296,6 +300,7 @@ class TestToolsSection:
 # サブエージェントセクション
 # -----------------------------------------------------------------------
 
+
 class TestSubAgentsSection:
     def test_agent_id_appears(self, tmp_path: Path) -> None:
         """エージェント ID が表示される（短縮形でも可）"""
@@ -330,6 +335,7 @@ class TestSubAgentsSection:
 # 思考ログセクション
 # -----------------------------------------------------------------------
 
+
 class TestThinkingSection:
     def test_details_summary_used(self, tmp_path: Path) -> None:
         """<details>/<summary> 要素が使われている"""
@@ -349,6 +355,7 @@ class TestThinkingSection:
     def test_no_thinking_shows_empty_message(self, tmp_path: Path) -> None:
         """thinking なしの場合は空メッセージが表示される"""
         from session_analyzer.models import ThinkingReport
+
         report = _make_report()
         report.thinking = ThinkingReport(entries=[], has_thinking=False)
         out = tmp_path / "out.html"

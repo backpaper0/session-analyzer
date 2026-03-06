@@ -1,4 +1,5 @@
 """スキル使用サマリーアナライザー"""
+
 from __future__ import annotations
 
 import re
@@ -48,12 +49,14 @@ class SkillAnalyzer:
                 if entry.is_meta
                 else InvocationMethod.USER_SLASH_COMMAND
             )
-            invocations.append(SkillInvocation(
-                skill_name=skill_name,
-                method=method,
-                timestamp=entry.timestamp,
-                uuid=entry.uuid,
-            ))
+            invocations.append(
+                SkillInvocation(
+                    skill_name=skill_name,
+                    method=method,
+                    timestamp=entry.timestamp,
+                    uuid=entry.uuid,
+                )
+            )
 
         # タイムスタンプ順（エントリ順）に並べる
         summary: dict[str, int] = {}

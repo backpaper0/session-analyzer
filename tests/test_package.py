@@ -1,4 +1,5 @@
 """タスク1.1: パッケージ構造とエントリポイントのテスト"""
+
 import subprocess
 import sys
 from pathlib import Path
@@ -7,12 +8,14 @@ from pathlib import Path
 def test_package_importable():
     """session_analyzerパッケージがインポート可能であること"""
     import session_analyzer
+
     assert session_analyzer is not None
 
 
 def test_package_has_version():
     """パッケージにバージョン情報が存在すること"""
     import session_analyzer
+
     assert hasattr(session_analyzer, "__version__")
 
 
@@ -33,4 +36,5 @@ def test_main_module_runnable():
 def test_main_entry_point_signature():
     """main() 関数が定義されていて呼び出し可能であること"""
     from session_analyzer.__main__ import main
+
     assert callable(main)

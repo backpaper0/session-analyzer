@@ -1,10 +1,14 @@
 """タスク4.3: ツール使用サマリーと Bash コマンド集計テスト"""
-import pytest
+
 from session_analyzer.analyzers.tool import ToolAnalyzer
 from session_analyzer.models import (
-    ParsedSession, AssistantEntry, UserEntry, UsageData,
-    TextBlock, ToolUseBlock, ToolResultBlock,
-    ToolReport, BashInvocation, CommandAggregation,
+    AssistantEntry,
+    ParsedSession,
+    ToolReport,
+    ToolResultBlock,
+    ToolUseBlock,
+    UsageData,
+    UserEntry,
 )
 
 
@@ -16,27 +20,39 @@ def _make_session(main_entries=None, subagent_entries=None) -> ParsedSession:
     )
 
 
-def _make_assistant(content: list, timestamp: str = "2024-01-01T00:00:00Z",
-                    agent_id: str | None = None) -> AssistantEntry:
+def _make_assistant(
+    content: list, timestamp: str = "2024-01-01T00:00:00Z", agent_id: str | None = None
+) -> AssistantEntry:
     return AssistantEntry(
-        uuid="a1", parent_uuid=None, timestamp=timestamp,
-        model="claude-sonnet-4-6", content=content,
-        usage=UsageData(), agent_id=agent_id,
+        uuid="a1",
+        parent_uuid=None,
+        timestamp=timestamp,
+        model="claude-sonnet-4-6",
+        content=content,
+        usage=UsageData(),
+        agent_id=agent_id,
     )
 
 
-def _make_user_with_result(tool_use_id: str, content: str,
-                           is_error: bool = False,
-                           timestamp: str = "2024-01-01T00:00:01Z") -> UserEntry:
+def _make_user_with_result(
+    tool_use_id: str,
+    content: str,
+    is_error: bool = False,
+    timestamp: str = "2024-01-01T00:00:01Z",
+) -> UserEntry:
     return UserEntry(
-        uuid="u1", parent_uuid=None, timestamp=timestamp,
+        uuid="u1",
+        parent_uuid=None,
+        timestamp=timestamp,
         is_meta=False,
-        content=[ToolResultBlock(
-            type="tool_result",
-            tool_use_id=tool_use_id,
-            content=content,
-            is_error=is_error,
-        )],
+        content=[
+            ToolResultBlock(
+                type="tool_result",
+                tool_use_id=tool_use_id,
+                content=content,
+                is_error=is_error,
+            )
+        ],
         agent_id=None,
     )
 
@@ -47,6 +63,7 @@ def _tool_use(tool_id: str, name: str, cmd: str | None = None) -> ToolUseBlock:
 
 
 # --- 戻り値の型 ---
+
 
 def test_analyze_returns_tool_report():
     result = ToolAnalyzer().analyze(_make_session())
@@ -61,6 +78,7 @@ def test_analyze_empty_session():
 
 
 # --- ツール使用カウント ---
+
 
 def test_analyze_counts_tool_by_name():
     """tool_useブロックがツール名別にカウントされること"""
@@ -77,8 +95,11 @@ def test_analyze_counts_tool_by_name():
 def test_analyze_counts_from_subagents():
     """サブエージェントのtool_useも集計対象であること"""
     main_entries = [_make_assistant([_tool_use("t1", "Read")])]
-    sub_entries = [_make_assistant([_tool_use("t2", "Read"), _tool_use("t3", "Write")],
-                                   agent_id="sub1")]
+    sub_entries = [
+        _make_assistant(
+            [_tool_use("t2", "Read"), _tool_use("t3", "Write")], agent_id="sub1"
+        )
+    ]
     result = ToolAnalyzer().analyze(_make_session(main_entries, {"sub1": sub_entries}))
 
     assert result.tool_counts["Read"] == 2
@@ -93,6 +114,7 @@ def test_analyze_user_entries_not_counted():
 
 
 # --- Bash 実行一覧 ---
+
 
 def test_analyze_bash_invocation_command():
     """Bashツール実行がbash_invocationsに記録されること"""
@@ -133,7 +155,9 @@ def test_analyze_bash_invocation_is_error():
 def test_analyze_bash_invocation_timestamp():
     """BashInvocationにassistantエントリのタイムスタンプが設定されること"""
     entries = [
-        _make_assistant([_tool_use("t1", "Bash", "ls")], timestamp="2024-06-01T12:00:00Z"),
+        _make_assistant(
+            [_tool_use("t1", "Bash", "ls")], timestamp="2024-06-01T12:00:00Z"
+        ),
         _make_user_with_result("t1", "output"),
     ]
     result = ToolAnalyzer().analyze(_make_session(entries))
@@ -154,13 +178,25 @@ def test_analyze_bash_invocation_source_subagent():
     """サブエージェントのBash実行はsource=agent_idであること"""
     sub_entries = [
         _make_assistant([_tool_use("t1", "Bash", "ls")], agent_id="sub1"),
-        UserEntry(uuid="u1", parent_uuid=None, timestamp="2024-01-01T00:00:01Z",
-                  is_meta=False,
-                  content=[ToolResultBlock(type="tool_result", tool_use_id="t1",
-                                           content="output", is_error=False)],
-                  agent_id="sub1"),
+        UserEntry(
+            uuid="u1",
+            parent_uuid=None,
+            timestamp="2024-01-01T00:00:01Z",
+            is_meta=False,
+            content=[
+                ToolResultBlock(
+                    type="tool_result",
+                    tool_use_id="t1",
+                    content="output",
+                    is_error=False,
+                )
+            ],
+            agent_id="sub1",
+        ),
     ]
-    result = ToolAnalyzer().analyze(_make_session(subagent_entries={"sub1": sub_entries}))
+    result = ToolAnalyzer().analyze(
+        _make_session(subagent_entries={"sub1": sub_entries})
+    )
     assert result.bash_invocations[0].source == "sub1"
 
 
@@ -181,6 +217,7 @@ def test_analyze_non_bash_tool_not_in_bash_invocations():
 
 
 # --- Bash コマンド集計 ---
+
 
 def test_analyze_bash_aggregation_base_command():
     """コマンドのベースコマンドが正しく集計されること"""

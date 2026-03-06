@@ -1,4 +1,5 @@
 """ログ詳細タブ HTML レンダラー"""
+
 from __future__ import annotations
 
 import json
@@ -79,7 +80,9 @@ def _render_content_block(block: ContentBlock, agent_link_map: dict[str, str]) -
 
     if isinstance(block, ToolResultBlock):
         error_class = " tool-result-error" if block.is_error else ""
-        error_badge = '<span class="badge badge-failure">エラー</span> ' if block.is_error else ""
+        error_badge = (
+            '<span class="badge badge-failure">エラー</span> ' if block.is_error else ""
+        )
         content_escaped = _esc(block.content)
         if _is_long(block.content):
             label = "エラー結果" if block.is_error else "ツール結果"
@@ -99,12 +102,16 @@ def _render_entry(entry: LogEntry, agent_link_map: dict[str, str]) -> str:
         role_label = "assistant"
         role_class = "role-assistant"
         meta_html = f'<span class="log-model meta-label">{_esc(entry.model)}</span>'
-        content_html = "".join(_render_content_block(b, agent_link_map) for b in entry.content)
+        content_html = "".join(
+            _render_content_block(b, agent_link_map) for b in entry.content
+        )
     else:
         assert isinstance(entry, UserEntry)
         role_label = "user"
         role_class = "role-user"
-        meta_badge = ' <span class="badge badge-meta">meta</span>' if entry.is_meta else ""
+        meta_badge = (
+            ' <span class="badge badge-meta">meta</span>' if entry.is_meta else ""
+        )
         meta_html = meta_badge
         if isinstance(entry.content, str):
             if _is_long(entry.content):
@@ -116,7 +123,9 @@ def _render_entry(entry: LogEntry, agent_link_map: dict[str, str]) -> str:
             else:
                 content_html = f'<p class="log-text">{_esc(entry.content)}</p>'
         else:
-            content_html = "".join(_render_content_block(b, agent_link_map) for b in entry.content)
+            content_html = "".join(
+                _render_content_block(b, agent_link_map) for b in entry.content
+            )
 
     return f"""<div id="entry-{_esc(entry.uuid)}" class="log-entry {role_class}" data-log-entry>
   <div class="log-entry-header">
@@ -141,7 +150,9 @@ def _render_log_entries(entries: list[LogEntry], agent_link_map: dict[str, str])
         entry_html = _render_entry(entry, agent_link_map)
         if show_toggle and i >= _MAX_INITIAL_ENTRIES:
             # 201 件目以降は非表示
-            entry_html = entry_html.replace("data-log-entry", 'data-log-entry class="log-entry-hidden"', 1)
+            entry_html = entry_html.replace(
+                "data-log-entry", 'data-log-entry class="log-entry-hidden"', 1
+            )
         html_parts.append(entry_html)
 
     result = "".join(html_parts)

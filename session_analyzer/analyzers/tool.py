@@ -1,4 +1,5 @@
 """ツール使用サマリーと Bash コマンド集計アナライザー"""
+
 from __future__ import annotations
 
 import shlex
@@ -41,6 +42,7 @@ def _parse_base_command(cmd: str) -> tuple[str, str | None]:
 @dataclass
 class _BashContext:
     """Bash ツール実行の中間データ"""
+
     tool_use_id: str
     command: str
     timestamp: str
@@ -92,14 +94,16 @@ class ToolAnalyzer:
             result = tool_results.get(tool_id)
             is_error = result.is_error if result else False
             error_msg = result.content if (result and result.is_error) else None
-            bash_invocations.append(BashInvocation(
-                command=ctx.command,
-                is_error=is_error,
-                error_message=error_msg,
-                timestamp=ctx.timestamp,
-                source=ctx.source,
-                entry_uuid=ctx.entry_uuid,
-            ))
+            bash_invocations.append(
+                BashInvocation(
+                    command=ctx.command,
+                    is_error=is_error,
+                    error_message=error_msg,
+                    timestamp=ctx.timestamp,
+                    source=ctx.source,
+                    entry_uuid=ctx.entry_uuid,
+                )
+            )
 
         # bash_aggregation を構築
         base_counts: dict[str, int] = defaultdict(int)

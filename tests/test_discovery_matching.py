@@ -1,6 +1,8 @@
 """タスク2.2: セッションIDマッチングとサブエージェント探索のテスト"""
-import pytest
+
 from pathlib import Path
+
+import pytest
 
 from session_analyzer.discovery import LogDiscovery
 from session_analyzer.exceptions import AmbiguousSessionError, SessionNotFoundError
@@ -26,6 +28,7 @@ def _make_subagent(root: Path, project: str, session_id: str, agent_id: str) -> 
 
 
 # --- 完全一致マッチング ---
+
 
 def test_discover_exact_match(tmp_path):
     """完全一致でセッションJSONLを特定できること"""
@@ -60,6 +63,7 @@ def test_discover_exact_match_preferred_over_prefix(tmp_path):
 
 
 # --- prefix マッチング ---
+
 
 def test_discover_prefix_match(tmp_path):
     """セッションIDのprefixでマッチできること"""
@@ -105,6 +109,7 @@ def test_discover_no_match_raises(tmp_path):
 
 
 # --- サブエージェントファイル探索 ---
+
 
 def test_discover_no_subagents(tmp_path):
     """サブエージェントがない場合はsubagentsが空リストであること"""

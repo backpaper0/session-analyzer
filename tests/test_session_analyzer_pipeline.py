@@ -1,10 +1,9 @@
 """タスク4: SessionAnalyzer パイプライン接続テスト"""
+
 from __future__ import annotations
 
 from pathlib import Path
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 from session_analyzer.models import (
     AssistantEntry,
@@ -72,21 +71,11 @@ class TestSessionAnalyzerPipeline:
         report = _make_minimal_report("sess-task4")
 
         with (
-            patch(
-                "session_analyzer.session_analyzer.LogDiscovery"
-            ) as mock_discovery,
-            patch(
-                "session_analyzer.session_analyzer.LogParser"
-            ) as mock_parser,
-            patch(
-                "session_analyzer.session_analyzer.TokenAnalyzer"
-            ) as mock_token,
-            patch(
-                "session_analyzer.session_analyzer.SkillAnalyzer"
-            ) as mock_skill,
-            patch(
-                "session_analyzer.session_analyzer.ToolAnalyzer"
-            ) as mock_tool,
+            patch("session_analyzer.session_analyzer.LogDiscovery") as mock_discovery,
+            patch("session_analyzer.session_analyzer.LogParser") as mock_parser,
+            patch("session_analyzer.session_analyzer.TokenAnalyzer") as mock_token,
+            patch("session_analyzer.session_analyzer.SkillAnalyzer") as mock_skill,
+            patch("session_analyzer.session_analyzer.ToolAnalyzer") as mock_tool,
             patch(
                 "session_analyzer.session_analyzer.SubAgentAnalyzer"
             ) as mock_subagent,
@@ -125,7 +114,12 @@ class TestSessionAnalyzerPipeline:
         output = tmp_path / "out.html"
 
         # サブエージェント付き ParsedSession を作成
-        agent_block = ToolUseBlock(type="tool_use", id="tool-001", name="Agent", input={"prompt": "do something"})
+        agent_block = ToolUseBlock(
+            type="tool_use",
+            id="tool-001",
+            name="Agent",
+            input={"prompt": "do something"},
+        )
         entry = AssistantEntry(
             uuid="msg-001",
             parent_uuid=None,
@@ -156,9 +150,15 @@ class TestSessionAnalyzerPipeline:
             patch("session_analyzer.session_analyzer.TokenAnalyzer") as mock_token,
             patch("session_analyzer.session_analyzer.SkillAnalyzer") as mock_skill,
             patch("session_analyzer.session_analyzer.ToolAnalyzer") as mock_tool,
-            patch("session_analyzer.session_analyzer.SubAgentAnalyzer") as mock_subagent,
-            patch("session_analyzer.session_analyzer.ThinkingAnalyzer") as mock_thinking,
-            patch("session_analyzer.session_analyzer.HtmlReporter") as mock_reporter_cls,
+            patch(
+                "session_analyzer.session_analyzer.SubAgentAnalyzer"
+            ) as mock_subagent,
+            patch(
+                "session_analyzer.session_analyzer.ThinkingAnalyzer"
+            ) as mock_thinking,
+            patch(
+                "session_analyzer.session_analyzer.HtmlReporter"
+            ) as mock_reporter_cls,
         ):
             mock_discovery.return_value.discover.return_value = []
             mock_parser.return_value.parse.return_value = parsed
@@ -181,7 +181,9 @@ class TestSessionAnalyzerPipeline:
             agent_link_map = args[2]
             assert isinstance(agent_link_map, dict), "agent_link_map が dict でない"
             # tool-001 が subagent-file-001.jsonl にマッピングされているか
-            assert "tool-001" in agent_link_map, "Agent ToolUseBlock.id がマップに含まれていない"
+            assert "tool-001" in agent_link_map, (
+                "Agent ToolUseBlock.id がマップに含まれていない"
+            )
             assert agent_link_map["tool-001"] == "subagent-file-001.jsonl"
 
     def test_generated_html_has_no_external_resources(self, tmp_path: Path) -> None:
@@ -196,8 +198,12 @@ class TestSessionAnalyzerPipeline:
             patch("session_analyzer.session_analyzer.TokenAnalyzer") as mock_token,
             patch("session_analyzer.session_analyzer.SkillAnalyzer") as mock_skill,
             patch("session_analyzer.session_analyzer.ToolAnalyzer") as mock_tool,
-            patch("session_analyzer.session_analyzer.SubAgentAnalyzer") as mock_subagent,
-            patch("session_analyzer.session_analyzer.ThinkingAnalyzer") as mock_thinking,
+            patch(
+                "session_analyzer.session_analyzer.SubAgentAnalyzer"
+            ) as mock_subagent,
+            patch(
+                "session_analyzer.session_analyzer.ThinkingAnalyzer"
+            ) as mock_thinking,
         ):
             mock_discovery.return_value.discover.return_value = []
             mock_parser.return_value.parse.return_value = parsed
@@ -209,12 +215,14 @@ class TestSessionAnalyzerPipeline:
 
             # 実際の HtmlReporter を使ってファイルを生成
             from session_analyzer.reporter import HtmlReporter
+
             with patch("session_analyzer.session_analyzer.HtmlReporter", HtmlReporter):
                 SessionAnalyzer().run("sess-no-ext", Path("/fake"), output)
 
         content = output.read_text(encoding="utf-8")
         # 外部 URL 参照がないことを確認（src=, href= などで始まる外部リンク）
         import re
+
         external_refs = re.findall(r'(?:src|href)=["\']https?://', content)
         assert not external_refs, f"外部リソース参照が含まれている: {external_refs}"
 
@@ -230,8 +238,12 @@ class TestSessionAnalyzerPipeline:
             patch("session_analyzer.session_analyzer.TokenAnalyzer") as mock_token,
             patch("session_analyzer.session_analyzer.SkillAnalyzer") as mock_skill,
             patch("session_analyzer.session_analyzer.ToolAnalyzer") as mock_tool,
-            patch("session_analyzer.session_analyzer.SubAgentAnalyzer") as mock_subagent,
-            patch("session_analyzer.session_analyzer.ThinkingAnalyzer") as mock_thinking,
+            patch(
+                "session_analyzer.session_analyzer.SubAgentAnalyzer"
+            ) as mock_subagent,
+            patch(
+                "session_analyzer.session_analyzer.ThinkingAnalyzer"
+            ) as mock_thinking,
         ):
             mock_discovery.return_value.discover.return_value = []
             mock_parser.return_value.parse.return_value = parsed
@@ -242,6 +254,7 @@ class TestSessionAnalyzerPipeline:
             mock_thinking.return_value.analyze.return_value = report.thinking
 
             from session_analyzer.reporter import HtmlReporter
+
             with patch("session_analyzer.session_analyzer.HtmlReporter", HtmlReporter):
                 SessionAnalyzer().run("sess-log-tab", Path("/fake"), output)
 

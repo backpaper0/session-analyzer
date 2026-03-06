@@ -1,4 +1,5 @@
 """JSONL ログファイルパーサー"""
+
 from __future__ import annotations
 
 import json
@@ -43,8 +44,7 @@ def _parse_content_block(raw: dict) -> ContentBlock | None:
         # content が list の場合は文字列に結合する
         if isinstance(content, list):
             content = "\n".join(
-                b.get("text", "") if isinstance(b, dict) else str(b)
-                for b in content
+                b.get("text", "") if isinstance(b, dict) else str(b) for b in content
             )
         return ToolResultBlock(
             type="tool_result",
@@ -71,7 +71,9 @@ def _parse_content(raw_content: str | list) -> str | list[ContentBlock]:
     return str(raw_content)
 
 
-def _parse_assistant_entry(raw: dict, agent_id: str | None = None) -> AssistantEntry | None:
+def _parse_assistant_entry(
+    raw: dict, agent_id: str | None = None
+) -> AssistantEntry | None:
     """raw dict を AssistantEntry に変換する。必須フィールドがなければ None を返す。"""
     message = raw.get("message", {})
     if not isinstance(message, dict):
@@ -184,7 +186,7 @@ class LogParser:
         for sub_path in files.subagents:
             # agent-{agentId}.jsonl → agentId
             stem = sub_path.stem  # e.g. "agent-aaa111"
-            agent_id = stem[len("agent-"):] if stem.startswith("agent-") else stem
+            agent_id = stem[len("agent-") :] if stem.startswith("agent-") else stem
             entries, _, _ = self._parse_file(sub_path, agent_id=agent_id)
             subagent_entries[agent_id] = entries
 

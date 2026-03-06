@@ -1,15 +1,16 @@
 """ドメインモデル定義"""
+
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 from typing import Literal
 
-
 # ---------------------------------------------------------------------------
 # コンテンツブロック
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class UsageData:
@@ -55,6 +56,7 @@ ContentBlock = TextBlock | ToolUseBlock | ThinkingBlock | ToolResultBlock
 # ログエントリ
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class AssistantEntry:
     uuid: str
@@ -83,6 +85,7 @@ LogEntry = AssistantEntry | UserEntry
 # セッション集約モデル
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class SessionFiles:
     main: Path
@@ -94,13 +97,14 @@ class ParsedSession:
     session_id: str
     main_entries: list[LogEntry]
     subagent_entries: dict[str, list[LogEntry]]  # agentId -> entries
-    cwd: str | None = None            # セッション実行時のワークディレクトリ
+    cwd: str | None = None  # セッション実行時のワークディレクトリ
     last_timestamp: str | None = None  # 最後のエントリのタイムスタンプ
 
 
 # ---------------------------------------------------------------------------
 # アナライザー出力型
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class TokenUsageStats:
@@ -134,17 +138,17 @@ class SkillInvocation:
 @dataclass
 class SkillReport:
     invocations: list[SkillInvocation]  # 時系列順
-    summary: dict[str, int]             # skill_name -> count
+    summary: dict[str, int]  # skill_name -> count
 
 
 @dataclass
 class BashInvocation:
-    command: str           # 実行されたコマンド文字列
+    command: str  # 実行されたコマンド文字列
     is_error: bool
     error_message: str | None
     timestamp: str
-    source: str            # "main" or agent_id
-    entry_uuid: str        # Bash ToolUseBlock を含む AssistantEntry.uuid
+    source: str  # "main" or agent_id
+    entry_uuid: str  # Bash ToolUseBlock を含む AssistantEntry.uuid
 
 
 @dataclass
@@ -156,18 +160,18 @@ class CommandAggregation:
 
 @dataclass
 class ToolReport:
-    tool_counts: dict[str, int]               # tool_name -> count
-    bash_invocations: list[BashInvocation]    # 全 Bash 実行一覧（時系列）
+    tool_counts: dict[str, int]  # tool_name -> count
+    bash_invocations: list[BashInvocation]  # 全 Bash 実行一覧（時系列）
     bash_aggregation: list[CommandAggregation]  # ベースコマンド別集計（降順）
 
 
 @dataclass
 class SubAgentInfo:
     agent_id: str
-    tool_name: str               # "Task" or "Agent"
-    subagent_type: str | None    # e.g. "Explore"
-    prompt: str                  # description または prompt フィールド
-    launched_at: str             # timestamp
+    tool_name: str  # "Task" or "Agent"
+    subagent_type: str | None  # e.g. "Explore"
+    prompt: str  # description または prompt フィールド
+    launched_at: str  # timestamp
     token_usage: TokenUsageStats | None  # サブエージェントログがある場合
 
 
@@ -178,10 +182,10 @@ class SubAgentReport:
 
 @dataclass
 class ThinkingEntry:
-    content: str         # thinking テキスト
-    message_uuid: str    # 紐づく assistant メッセージの UUID
+    content: str  # thinking テキスト
+    message_uuid: str  # 紐づく assistant メッセージの UUID
     timestamp: str
-    source: str          # "main" or agent_id
+    source: str  # "main" or agent_id
 
 
 @dataclass

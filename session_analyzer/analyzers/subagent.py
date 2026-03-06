@@ -1,4 +1,5 @@
 """サブエージェント情報集計アナライザー"""
+
 from __future__ import annotations
 
 from session_analyzer.analyzers.token import TokenAnalyzer
@@ -23,6 +24,7 @@ def _compute_subagent_token_usage(
         return None
 
     from session_analyzer.models import ParsedSession
+
     pseudo_session = ParsedSession(
         session_id="_sub",
         main_entries=entries,
@@ -53,14 +55,16 @@ class SubAgentAnalyzer:
                 prompt = inp.get("prompt") or inp.get("description") or ""
                 subagent_type = inp.get("subagent_type")
 
-                task_calls.append(SubAgentInfo(
-                    agent_id=block.id,
-                    tool_name=block.name,
-                    subagent_type=subagent_type,
-                    prompt=str(prompt),
-                    launched_at=entry.timestamp,
-                    token_usage=None,  # 後で紐づけ
-                ))
+                task_calls.append(
+                    SubAgentInfo(
+                        agent_id=block.id,
+                        tool_name=block.name,
+                        subagent_type=subagent_type,
+                        prompt=str(prompt),
+                        launched_at=entry.timestamp,
+                        token_usage=None,  # 後で紐づけ
+                    )
+                )
 
         # サブエージェントエントリのトークン使用量を計算
         sub_token_usages: list[TokenUsageStats] = []

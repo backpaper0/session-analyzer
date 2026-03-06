@@ -1,22 +1,20 @@
 """_build_agent_link_map のユニットテスト"""
+
 from __future__ import annotations
 
-import pytest
-
-from session_analyzer.session_analyzer import _build_agent_link_map
 from session_analyzer.models import (
     AssistantEntry,
     ParsedSession,
-    TextBlock,
     ToolUseBlock,
     UsageData,
     UserEntry,
 )
-
+from session_analyzer.session_analyzer import _build_agent_link_map
 
 # ---------------------------------------------------------------------------
 # テストヘルパー
 # ---------------------------------------------------------------------------
+
 
 def _make_parsed(
     main_entries=None,
@@ -59,6 +57,7 @@ def _tool_use(id: str, name: str) -> ToolUseBlock:
 # ---------------------------------------------------------------------------
 # タスク 5.2: リンクマップ構築ロジックの単体テスト
 # ---------------------------------------------------------------------------
+
 
 class TestBuildAgentLinkMap:
     """_build_agent_link_map の動作検証"""

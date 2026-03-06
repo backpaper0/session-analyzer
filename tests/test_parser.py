@@ -1,14 +1,18 @@
 """タスク3.1: JSONL 行単位ストリーミング解析のテスト"""
+
 import json
-import sys
-import pytest
 from pathlib import Path
 
-from session_analyzer.parser import LogParser
 from session_analyzer.models import (
-    AssistantEntry, UserEntry, TextBlock, ToolUseBlock,
-    ToolResultBlock, ThinkingBlock, UsageData,
+    AssistantEntry,
+    TextBlock,
+    ThinkingBlock,
+    ToolResultBlock,
+    ToolUseBlock,
+    UsageData,
+    UserEntry,
 )
+from session_analyzer.parser import LogParser
 
 
 def _write_jsonl(path: Path, entries: list[dict]) -> None:
@@ -87,12 +91,14 @@ def test_parse_assistant_tool_use_block(tmp_path):
         **ASSISTANT_ENTRY,
         "message": {
             **ASSISTANT_ENTRY["message"],
-            "content": [{
-                "type": "tool_use",
-                "id": "tool-id-1",
-                "name": "Bash",
-                "input": {"command": "ls -la"},
-            }],
+            "content": [
+                {
+                    "type": "tool_use",
+                    "id": "tool-id-1",
+                    "name": "Bash",
+                    "input": {"command": "ls -la"},
+                }
+            ],
         },
     }
     f = tmp_path / "session.jsonl"
@@ -113,11 +119,13 @@ def test_parse_assistant_thinking_block(tmp_path):
         **ASSISTANT_ENTRY,
         "message": {
             **ASSISTANT_ENTRY["message"],
-            "content": [{
-                "type": "thinking",
-                "thinking": "Let me think...",
-                "signature": "sig-abc",
-            }],
+            "content": [
+                {
+                    "type": "thinking",
+                    "thinking": "Let me think...",
+                    "signature": "sig-abc",
+                }
+            ],
         },
     }
     f = tmp_path / "session.jsonl"
@@ -181,11 +189,13 @@ def test_parse_user_entry_tool_result_content(tmp_path):
         "isMeta": False,
         "message": {
             "role": "user",
-            "content": [{
-                "type": "tool_result",
-                "tool_use_id": "tool-id-1",
-                "content": "command output here",
-            }],
+            "content": [
+                {
+                    "type": "tool_result",
+                    "tool_use_id": "tool-id-1",
+                    "content": "command output here",
+                }
+            ],
         },
     }
     f = tmp_path / "session.jsonl"
@@ -210,12 +220,14 @@ def test_parse_user_entry_tool_result_error(tmp_path):
         "isMeta": False,
         "message": {
             "role": "user",
-            "content": [{
-                "type": "tool_result",
-                "tool_use_id": "tool-id-2",
-                "content": "Error: command not found",
-                "is_error": True,
-            }],
+            "content": [
+                {
+                    "type": "tool_result",
+                    "tool_use_id": "tool-id-2",
+                    "content": "Error: command not found",
+                    "is_error": True,
+                }
+            ],
         },
     }
     f = tmp_path / "session.jsonl"
@@ -239,6 +251,7 @@ def test_parse_user_is_meta_false(tmp_path):
 
 # --- 未知型のスキップ ---
 
+
 def test_parse_skips_unknown_types(tmp_path):
     """未知のtypeエントリがスキップされること"""
     entries_data = [
@@ -257,13 +270,12 @@ def test_parse_skips_unknown_types(tmp_path):
 
 # --- 不正JSON のスキップ ---
 
+
 def test_parse_skips_invalid_json_lines(tmp_path, capsys):
     """不正なJSON行をスキップして処理を継続すること"""
     f = tmp_path / "session.jsonl"
     f.write_text(
-        '{"invalid json\n'
-        + json.dumps(ASSISTANT_ENTRY) + "\n"
-        + "not json at all\n"
+        '{"invalid json\n' + json.dumps(ASSISTANT_ENTRY) + "\n" + "not json at all\n"
     )
 
     entries = LogParser()._parse_file(f)[0]
@@ -283,6 +295,7 @@ def test_parse_invalid_json_warns_to_stderr(tmp_path, capsys):
 
 # --- 空ファイル ---
 
+
 def test_parse_empty_file(tmp_path):
     """空のJSONLファイルは空リストを返すこと"""
     f = tmp_path / "session.jsonl"
@@ -293,6 +306,7 @@ def test_parse_empty_file(tmp_path):
 
 
 # --- 複数エントリの順序 ---
+
 
 def test_parse_multiple_entries_in_order(tmp_path):
     """複数エントリが順序通りに返されること"""

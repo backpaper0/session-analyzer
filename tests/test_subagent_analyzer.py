@@ -1,9 +1,13 @@
 """タスク4.4: サブエージェント情報の集計テスト"""
-import pytest
+
 from session_analyzer.analyzers.subagent import SubAgentAnalyzer
 from session_analyzer.models import (
-    ParsedSession, AssistantEntry, UserEntry, UsageData,
-    ToolUseBlock, SubAgentReport, SubAgentInfo,
+    AssistantEntry,
+    ParsedSession,
+    SubAgentReport,
+    ToolUseBlock,
+    UsageData,
+    UserEntry,
 )
 
 
@@ -15,35 +19,48 @@ def _make_session(main_entries=None, subagent_entries=None) -> ParsedSession:
     )
 
 
-def _make_assistant_with_task(tool_id: str, tool_name: str = "Task",
-                               subagent_type: str | None = "Explore",
-                               prompt: str = "do something",
-                               description: str = "My task",
-                               timestamp: str = "2024-01-01T00:00:00Z") -> AssistantEntry:
+def _make_assistant_with_task(
+    tool_id: str,
+    tool_name: str = "Task",
+    subagent_type: str | None = "Explore",
+    prompt: str = "do something",
+    description: str = "My task",
+    timestamp: str = "2024-01-01T00:00:00Z",
+) -> AssistantEntry:
     task_input: dict = {"prompt": prompt}
     if subagent_type:
         task_input["subagent_type"] = subagent_type
     if description:
         task_input["description"] = description
     return AssistantEntry(
-        uuid="a1", parent_uuid=None, timestamp=timestamp,
+        uuid="a1",
+        parent_uuid=None,
+        timestamp=timestamp,
         model="claude-sonnet-4-6",
-        content=[ToolUseBlock(type="tool_use", id=tool_id, name=tool_name, input=task_input)],
-        usage=UsageData(), agent_id=None,
+        content=[
+            ToolUseBlock(type="tool_use", id=tool_id, name=tool_name, input=task_input)
+        ],
+        usage=UsageData(),
+        agent_id=None,
     )
 
 
-def _make_sub_assistant(model: str, input_tokens: int, output_tokens: int,
-                        agent_id: str) -> AssistantEntry:
+def _make_sub_assistant(
+    model: str, input_tokens: int, output_tokens: int, agent_id: str
+) -> AssistantEntry:
     return AssistantEntry(
-        uuid="sa1", parent_uuid=None, timestamp="2024-01-01T00:01:00Z",
-        model=model, content=[],
+        uuid="sa1",
+        parent_uuid=None,
+        timestamp="2024-01-01T00:01:00Z",
+        model=model,
+        content=[],
         usage=UsageData(input_tokens=input_tokens, output_tokens=output_tokens),
         agent_id=agent_id,
     )
 
 
 # --- 戻り値の型 ---
+
 
 def test_analyze_returns_sub_agent_report():
     result = SubAgentAnalyzer().analyze(_make_session())
@@ -56,6 +73,7 @@ def test_analyze_empty_session():
 
 
 # --- Task/Agent tool_use の検出 ---
+
 
 def test_analyze_detects_task_tool_use():
     """Taskツール呼び出しがSubAgentInfoとして記録されること"""
@@ -78,10 +96,13 @@ def test_analyze_detects_agent_tool_use():
 def test_analyze_non_task_tools_ignored():
     """Task/Agent以外のtool_useは無視されること"""
     entry = AssistantEntry(
-        uuid="a1", parent_uuid=None, timestamp="2024-01-01T00:00:00Z",
+        uuid="a1",
+        parent_uuid=None,
+        timestamp="2024-01-01T00:00:00Z",
         model="claude-sonnet-4-6",
         content=[ToolUseBlock(type="tool_use", id="t1", name="Read", input={})],
-        usage=UsageData(), agent_id=None,
+        usage=UsageData(),
+        agent_id=None,
     )
     result = SubAgentAnalyzer().analyze(_make_session([entry]))
     assert result.agents == []
@@ -89,13 +110,20 @@ def test_analyze_non_task_tools_ignored():
 
 def test_analyze_user_entries_ignored():
     """userエントリはSubAgentInfo作成に含まれないこと"""
-    user = UserEntry(uuid="u1", parent_uuid=None, timestamp="2024-01-01T00:00:00Z",
-                     is_meta=False, content="hi", agent_id=None)
+    user = UserEntry(
+        uuid="u1",
+        parent_uuid=None,
+        timestamp="2024-01-01T00:00:00Z",
+        is_meta=False,
+        content="hi",
+        agent_id=None,
+    )
     result = SubAgentAnalyzer().analyze(_make_session([user]))
     assert result.agents == []
 
 
 # --- フィールドの抽出 ---
+
 
 def test_analyze_extracts_subagent_type():
     """subagent_typeが正しく抽出されること"""
@@ -108,11 +136,17 @@ def test_analyze_extracts_subagent_type():
 def test_analyze_subagent_type_none_when_missing():
     """subagent_typeがない場合はNoneになること"""
     entry = AssistantEntry(
-        uuid="a1", parent_uuid=None, timestamp="2024-01-01T00:00:00Z",
+        uuid="a1",
+        parent_uuid=None,
+        timestamp="2024-01-01T00:00:00Z",
         model="claude-sonnet-4-6",
-        content=[ToolUseBlock(type="tool_use", id="t1", name="Task",
-                              input={"prompt": "do something"})],
-        usage=UsageData(), agent_id=None,
+        content=[
+            ToolUseBlock(
+                type="tool_use", id="t1", name="Task", input={"prompt": "do something"}
+            )
+        ],
+        usage=UsageData(),
+        agent_id=None,
     )
     result = SubAgentAnalyzer().analyze(_make_session([entry]))
     assert result.agents[0].subagent_type is None
@@ -129,11 +163,20 @@ def test_analyze_extracts_prompt():
 def test_analyze_extracts_description_when_no_prompt():
     """promptがない場合はdescriptionがpromptとして使われること"""
     entry = AssistantEntry(
-        uuid="a1", parent_uuid=None, timestamp="2024-01-01T00:00:00Z",
+        uuid="a1",
+        parent_uuid=None,
+        timestamp="2024-01-01T00:00:00Z",
         model="claude-sonnet-4-6",
-        content=[ToolUseBlock(type="tool_use", id="t1", name="Task",
-                              input={"description": "Explore codebase"})],
-        usage=UsageData(), agent_id=None,
+        content=[
+            ToolUseBlock(
+                type="tool_use",
+                id="t1",
+                name="Task",
+                input={"description": "Explore codebase"},
+            )
+        ],
+        usage=UsageData(),
+        agent_id=None,
     )
     result = SubAgentAnalyzer().analyze(_make_session([entry]))
     assert result.agents[0].prompt == "Explore codebase"
@@ -157,11 +200,16 @@ def test_analyze_agent_id_is_tool_use_id():
 
 # --- 時系列順 ---
 
+
 def test_analyze_sorted_by_launch_time():
     """複数エージェントが起動順に並ぶこと"""
     entries = [
-        _make_assistant_with_task("t1", prompt="first", timestamp="2024-01-01T00:00:00Z"),
-        _make_assistant_with_task("t2", prompt="second", timestamp="2024-01-01T01:00:00Z"),
+        _make_assistant_with_task(
+            "t1", prompt="first", timestamp="2024-01-01T00:00:00Z"
+        ),
+        _make_assistant_with_task(
+            "t2", prompt="second", timestamp="2024-01-01T01:00:00Z"
+        ),
     ]
     result = SubAgentAnalyzer().analyze(_make_session(entries))
 
@@ -170,6 +218,7 @@ def test_analyze_sorted_by_launch_time():
 
 
 # --- token_usage の紐づけ ---
+
 
 def test_analyze_token_usage_none_when_no_subagent_entries():
     """対応するサブエージェントログがない場合はtoken_usage=Noneであること"""
@@ -195,8 +244,12 @@ def test_analyze_token_usage_computed_from_subagent_entries():
 def test_analyze_multiple_subagents_token_usage():
     """複数サブエージェントのtoken_usageが正しく紐づけられること"""
     main_entries = [
-        _make_assistant_with_task("t1", prompt="first", timestamp="2024-01-01T00:00:00Z"),
-        _make_assistant_with_task("t2", prompt="second", timestamp="2024-01-01T01:00:00Z"),
+        _make_assistant_with_task(
+            "t1", prompt="first", timestamp="2024-01-01T00:00:00Z"
+        ),
+        _make_assistant_with_task(
+            "t2", prompt="second", timestamp="2024-01-01T01:00:00Z"
+        ),
     ]
     sub1_entries = [_make_sub_assistant("claude-sonnet-4-6", 100, 40, "sub1")]
     sub2_entries = [_make_sub_assistant("claude-opus-4-6", 300, 120, "sub2")]

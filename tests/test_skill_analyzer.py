@@ -1,9 +1,13 @@
 """タスク4.2: スキル使用サマリーの解析テスト"""
-import pytest
+
 from session_analyzer.analyzers.skill import SkillAnalyzer
 from session_analyzer.models import (
-    ParsedSession, UserEntry, AssistantEntry, UsageData,
-    SkillReport, SkillInvocation, InvocationMethod,
+    AssistantEntry,
+    InvocationMethod,
+    ParsedSession,
+    SkillReport,
+    UsageData,
+    UserEntry,
 )
 
 
@@ -15,9 +19,12 @@ def _make_session(main_entries=None) -> ParsedSession:
     )
 
 
-def _make_user(content: str, uuid: str = "u1",
-               is_meta: bool = False,
-               timestamp: str = "2024-01-01T00:00:00Z") -> UserEntry:
+def _make_user(
+    content: str,
+    uuid: str = "u1",
+    is_meta: bool = False,
+    timestamp: str = "2024-01-01T00:00:00Z",
+) -> UserEntry:
     return UserEntry(
         uuid=uuid,
         parent_uuid=None,
@@ -30,13 +37,18 @@ def _make_user(content: str, uuid: str = "u1",
 
 def _make_assistant() -> AssistantEntry:
     return AssistantEntry(
-        uuid="a1", parent_uuid=None, timestamp="2024-01-01T00:00:00Z",
-        model="claude-sonnet-4-6", content=[],
-        usage=UsageData(), agent_id=None,
+        uuid="a1",
+        parent_uuid=None,
+        timestamp="2024-01-01T00:00:00Z",
+        model="claude-sonnet-4-6",
+        content=[],
+        usage=UsageData(),
+        agent_id=None,
     )
 
 
 # --- 戻り値の型 ---
+
 
 def test_analyze_returns_skill_report():
     """analyze()がSkillReportを返すこと"""
@@ -52,6 +64,7 @@ def test_analyze_empty_session():
 
 
 # --- command-name タグ抽出 ---
+
 
 def test_analyze_extracts_skill_from_command_name_tag():
     """<command-name>タグからスキル名を抽出できること"""
@@ -94,6 +107,7 @@ def test_analyze_assistant_entries_ignored():
 
 # --- 起動方法の分類 ---
 
+
 def test_analyze_user_slash_command_when_not_meta():
     """isMeta=falseの場合はUSER_SLASH_COMMANDに分類されること"""
     entry = _make_user("<command-name>/kiro:spec-impl</command-name>", is_meta=False)
@@ -112,10 +126,12 @@ def test_analyze_llm_auto_when_meta():
 
 # --- タイムスタンプ・UUID ---
 
+
 def test_analyze_invocation_has_timestamp():
     """SkillInvocationにタイムスタンプが設定されること"""
-    entry = _make_user("<command-name>/skill</command-name>",
-                       timestamp="2024-06-15T12:30:00Z")
+    entry = _make_user(
+        "<command-name>/skill</command-name>", timestamp="2024-06-15T12:30:00Z"
+    )
     result = SkillAnalyzer().analyze(_make_session([entry]))
 
     assert result.invocations[0].timestamp == "2024-06-15T12:30:00Z"
@@ -131,15 +147,25 @@ def test_analyze_invocation_has_uuid():
 
 # --- 時系列順 ---
 
+
 def test_analyze_invocations_in_chronological_order():
     """invocationsが時系列順に並ぶこと"""
     entries = [
-        _make_user("<command-name>/skill-a</command-name>",
-                   uuid="u1", timestamp="2024-01-01T00:00:00Z"),
-        _make_user("<command-name>/skill-b</command-name>",
-                   uuid="u2", timestamp="2024-01-01T01:00:00Z"),
-        _make_user("<command-name>/skill-c</command-name>",
-                   uuid="u3", timestamp="2024-01-01T02:00:00Z"),
+        _make_user(
+            "<command-name>/skill-a</command-name>",
+            uuid="u1",
+            timestamp="2024-01-01T00:00:00Z",
+        ),
+        _make_user(
+            "<command-name>/skill-b</command-name>",
+            uuid="u2",
+            timestamp="2024-01-01T01:00:00Z",
+        ),
+        _make_user(
+            "<command-name>/skill-c</command-name>",
+            uuid="u3",
+            timestamp="2024-01-01T02:00:00Z",
+        ),
     ]
     result = SkillAnalyzer().analyze(_make_session(entries))
 
@@ -148,6 +174,7 @@ def test_analyze_invocations_in_chronological_order():
 
 
 # --- サマリー集計 ---
+
 
 def test_analyze_summary_counts():
     """スキル名別の呼び出し回数が正しく集計されること"""

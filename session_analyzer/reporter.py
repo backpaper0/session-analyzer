@@ -1,9 +1,10 @@
 """HTML レポーター"""
+
 from __future__ import annotations
 
 import json
 from dataclasses import asdict
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -588,7 +589,7 @@ def _fmt_timestamp(ts: str) -> str:
         dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
         local_dt = dt.astimezone()
         return local_dt.strftime("%Y-%m-%d %H:%M:%S")
-    except (ValueError, AttributeError):
+    except ValueError, AttributeError:
         return ts
 
 
@@ -701,7 +702,8 @@ def _render_tools_section(report: SessionReport) -> str:
         sub_html = ""
         if agg.sub_commands:
             sub_items = ", ".join(
-                f"{k}({v})" for k, v in sorted(agg.sub_commands.items(), key=lambda x: -x[1])
+                f"{k}({v})"
+                for k, v in sorted(agg.sub_commands.items(), key=lambda x: -x[1])
             )
             sub_html = f'<br><span class="meta-label">{_esc(sub_items)}</span>'
         agg_rows += f"""
@@ -719,7 +721,9 @@ def _render_tools_section(report: SessionReport) -> str:
         badge_label = "失敗" if inv.is_error else "成功"
         err_html = ""
         if inv.error_message:
-            err_html = f'<br><span class="meta-label">{_esc(inv.error_message[:120])}</span>'
+            err_html = (
+                f'<br><span class="meta-label">{_esc(inv.error_message[:120])}</span>'
+            )
         log_link = f'<a class="log-link" href="javascript:void(0)" onclick="goToLogEntry(\'entry-{_esc(inv.entry_uuid)}\')">→ ログ詳細</a>'
         bash_rows += f"""
         <tr class="bash-row {status_cls}">
@@ -762,10 +766,12 @@ def _render_subagents_section(report: SessionReport) -> str:
         token_html = "―"
         if agent.token_usage:
             t = agent.token_usage
-            cost_str = f"${t.estimated_cost_usd:.4f}" if t.estimated_cost_usd is not None else "N/A"
-            token_html = (
-                f"入力:{t.input_tokens:,} / 出力:{t.output_tokens:,} / コスト:{cost_str}"
+            cost_str = (
+                f"${t.estimated_cost_usd:.4f}"
+                if t.estimated_cost_usd is not None
+                else "N/A"
             )
+            token_html = f"入力:{t.input_tokens:,} / 出力:{t.output_tokens:,} / コスト:{cost_str}"
         subtype = _esc(agent.subagent_type or "―")
         log_link = f'<a class="log-link" href="javascript:void(0)" onclick="goToLogEntry(\'subagent-{_esc(agent.agent_id)}\')">→ ログ詳細</a>'
         rows += f"""
@@ -780,7 +786,9 @@ def _render_subagents_section(report: SessionReport) -> str:
         </tr>"""
 
     if not rows:
-        rows = '<tr><td colspan="7" class="empty-msg">サブエージェント起動なし</td></tr>'
+        rows = (
+            '<tr><td colspan="7" class="empty-msg">サブエージェント起動なし</td></tr>'
+        )
 
     return f"""
     <div class="card">
@@ -846,8 +854,7 @@ def _build_html(report: SessionReport, log_tab_html: str = "") -> str:
         "tab-log": log_tab_html,
     }
     tab_panels = "".join(
-        f'<div id="{tid}" class="tab-panel">{panels[tid]}</div>'
-        for tid, _ in _TAB_DEFS
+        f'<div id="{tid}" class="tab-panel">{panels[tid]}</div>' for tid, _ in _TAB_DEFS
     )
 
     session_json = _report_to_json(report)
@@ -864,8 +871,8 @@ def _build_html(report: SessionReport, log_tab_html: str = "") -> str:
     <h1>Session Report</h1>
     <div class="session-meta">
         <span class="session-id">{_esc(report.session_id)}</span>
-        {f'<span class="session-cwd">{_esc(report.cwd)}</span>' if report.cwd else ''}
-        {f'<span class="session-time">{_esc(_fmt_timestamp(report.last_timestamp))}</span>' if report.last_timestamp else ''}
+        {f'<span class="session-cwd">{_esc(report.cwd)}</span>' if report.cwd else ""}
+        {f'<span class="session-time">{_esc(_fmt_timestamp(report.last_timestamp))}</span>' if report.last_timestamp else ""}
     </div>
 </header>
 <nav class="tab-bar">{tab_btns}</nav>

@@ -1,4 +1,5 @@
 """タスク7.1: サンプルログを使ったエンドツーエンドの動作確認"""
+
 from __future__ import annotations
 
 import json
@@ -64,7 +65,15 @@ class TestNoSubagentSession:
         from session_analyzer.__main__ import main
 
         output = tmp_path / "out.html"
-        rc = main([SESSION_NO_SUBAGENTS, "--claude-dir", str(_PROJECTS_ROOT), "-o", str(output)])
+        rc = main(
+            [
+                SESSION_NO_SUBAGENTS,
+                "--claude-dir",
+                str(_PROJECTS_ROOT),
+                "-o",
+                str(output),
+            ]
+        )
         assert rc == 0
         assert output.exists()
         assert output.stat().st_size > 0
@@ -74,7 +83,15 @@ class TestNoSubagentSession:
         from session_analyzer.__main__ import main
 
         output = tmp_path / "out.html"
-        main([SESSION_NO_SUBAGENTS, "--claude-dir", str(_PROJECTS_ROOT), "-o", str(output)])
+        main(
+            [
+                SESSION_NO_SUBAGENTS,
+                "--claude-dir",
+                str(_PROJECTS_ROOT),
+                "-o",
+                str(output),
+            ]
+        )
         content = output.read_text(encoding="utf-8")
         assert _is_valid_html(content)
 
@@ -83,7 +100,15 @@ class TestNoSubagentSession:
         from session_analyzer.__main__ import main
 
         output = tmp_path / "out.html"
-        main([SESSION_NO_SUBAGENTS, "--claude-dir", str(_PROJECTS_ROOT), "-o", str(output)])
+        main(
+            [
+                SESSION_NO_SUBAGENTS,
+                "--claude-dir",
+                str(_PROJECTS_ROOT),
+                "-o",
+                str(output),
+            ]
+        )
         content = output.read_text(encoding="utf-8")
         for label in ["トークン", "スキル", "ツール", "サブエージェント", "思考"]:
             assert label in content, f"タブ '{label}' が HTML に見つからない"
@@ -93,7 +118,15 @@ class TestNoSubagentSession:
         from session_analyzer.__main__ import main
 
         output = tmp_path / "out.html"
-        main([SESSION_NO_SUBAGENTS, "--claude-dir", str(_PROJECTS_ROOT), "-o", str(output)])
+        main(
+            [
+                SESSION_NO_SUBAGENTS,
+                "--claude-dir",
+                str(_PROJECTS_ROOT),
+                "-o",
+                str(output),
+            ]
+        )
         content = output.read_text(encoding="utf-8")
         data = _extract_session_data(content)
         assert data["session_id"] == SESSION_NO_SUBAGENTS
@@ -103,17 +136,35 @@ class TestNoSubagentSession:
         from session_analyzer.__main__ import main
 
         output = tmp_path / "out.html"
-        main([SESSION_NO_SUBAGENTS, "--claude-dir", str(_PROJECTS_ROOT), "-o", str(output)])
+        main(
+            [
+                SESSION_NO_SUBAGENTS,
+                "--claude-dir",
+                str(_PROJECTS_ROOT),
+                "-o",
+                str(output),
+            ]
+        )
         content = output.read_text(encoding="utf-8")
         data = _extract_session_data(content)
         assert data["sub_agents"]["agents"] == []
 
-    def test_stdout_contains_html_path(self, tmp_path: Path, capsys: pytest.CaptureFixture) -> None:
+    def test_stdout_contains_html_path(
+        self, tmp_path: Path, capsys: pytest.CaptureFixture
+    ) -> None:
         """成功時に stdout へ HTML パスが出力される"""
         from session_analyzer.__main__ import main
 
         output = tmp_path / "out.html"
-        rc = main([SESSION_NO_SUBAGENTS, "--claude-dir", str(_PROJECTS_ROOT), "-o", str(output)])
+        rc = main(
+            [
+                SESSION_NO_SUBAGENTS,
+                "--claude-dir",
+                str(_PROJECTS_ROOT),
+                "-o",
+                str(output),
+            ]
+        )
         assert rc == 0
         out = capsys.readouterr().out
         assert str(output) in out
@@ -130,7 +181,15 @@ class TestWithSubagentSession:
         from session_analyzer.__main__ import main
 
         output = tmp_path / "out.html"
-        rc = main([SESSION_WITH_SUBAGENTS, "--claude-dir", str(_PROJECTS_ROOT), "-o", str(output)])
+        rc = main(
+            [
+                SESSION_WITH_SUBAGENTS,
+                "--claude-dir",
+                str(_PROJECTS_ROOT),
+                "-o",
+                str(output),
+            ]
+        )
         assert rc == 0
         assert output.exists()
 
@@ -139,7 +198,15 @@ class TestWithSubagentSession:
         from session_analyzer.__main__ import main
 
         output = tmp_path / "out.html"
-        main([SESSION_WITH_SUBAGENTS, "--claude-dir", str(_PROJECTS_ROOT), "-o", str(output)])
+        main(
+            [
+                SESSION_WITH_SUBAGENTS,
+                "--claude-dir",
+                str(_PROJECTS_ROOT),
+                "-o",
+                str(output),
+            ]
+        )
         content = output.read_text(encoding="utf-8")
         assert _is_valid_html(content)
 
@@ -148,7 +215,15 @@ class TestWithSubagentSession:
         from session_analyzer.__main__ import main
 
         output = tmp_path / "out.html"
-        main([SESSION_WITH_SUBAGENTS, "--claude-dir", str(_PROJECTS_ROOT), "-o", str(output)])
+        main(
+            [
+                SESSION_WITH_SUBAGENTS,
+                "--claude-dir",
+                str(_PROJECTS_ROOT),
+                "-o",
+                str(output),
+            ]
+        )
         content = output.read_text(encoding="utf-8")
         data = _extract_session_data(content)
         assert data["session_id"] == SESSION_WITH_SUBAGENTS
@@ -159,8 +234,24 @@ class TestWithSubagentSession:
 
         out_no_sub = tmp_path / "no_sub.html"
         out_with_sub = tmp_path / "with_sub.html"
-        main([SESSION_NO_SUBAGENTS, "--claude-dir", str(_PROJECTS_ROOT), "-o", str(out_no_sub)])
-        main([SESSION_WITH_SUBAGENTS, "--claude-dir", str(_PROJECTS_ROOT), "-o", str(out_with_sub)])
+        main(
+            [
+                SESSION_NO_SUBAGENTS,
+                "--claude-dir",
+                str(_PROJECTS_ROOT),
+                "-o",
+                str(out_no_sub),
+            ]
+        )
+        main(
+            [
+                SESSION_WITH_SUBAGENTS,
+                "--claude-dir",
+                str(_PROJECTS_ROOT),
+                "-o",
+                str(out_with_sub),
+            ]
+        )
         # サブエージェントありの方がデータ量が多い（ファイルサイズで確認）
         assert out_with_sub.stat().st_size >= out_no_sub.stat().st_size
 
@@ -176,7 +267,15 @@ class TestOutputOption:
         from session_analyzer.__main__ import main
 
         custom = tmp_path / "custom_report.html"
-        rc = main([SESSION_NO_SUBAGENTS, "--claude-dir", str(_PROJECTS_ROOT), "--output", str(custom)])
+        rc = main(
+            [
+                SESSION_NO_SUBAGENTS,
+                "--claude-dir",
+                str(_PROJECTS_ROOT),
+                "--output",
+                str(custom),
+            ]
+        )
         assert rc == 0
         assert custom.exists()
 
@@ -185,11 +284,21 @@ class TestOutputOption:
         from session_analyzer.__main__ import main
 
         custom = tmp_path / "short_flag.html"
-        rc = main([SESSION_NO_SUBAGENTS, "--claude-dir", str(_PROJECTS_ROOT), "-o", str(custom)])
+        rc = main(
+            [
+                SESSION_NO_SUBAGENTS,
+                "--claude-dir",
+                str(_PROJECTS_ROOT),
+                "-o",
+                str(custom),
+            ]
+        )
         assert rc == 0
         assert custom.exists()
 
-    def test_default_output_filename(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_default_output_filename(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """--output 省略時のデフォルトファイル名 session-{session_id}.html に出力される"""
         from session_analyzer.__main__ import main
 
@@ -223,7 +332,15 @@ class TestPrefixMatching:
         prefix = SESSION_NO_SUBAGENTS[:8]
         out_full = tmp_path / "full.html"
         out_prefix = tmp_path / "prefix.html"
-        main([SESSION_NO_SUBAGENTS, "--claude-dir", str(_PROJECTS_ROOT), "-o", str(out_full)])
+        main(
+            [
+                SESSION_NO_SUBAGENTS,
+                "--claude-dir",
+                str(_PROJECTS_ROOT),
+                "-o",
+                str(out_full),
+            ]
+        )
         main([prefix, "--claude-dir", str(_PROJECTS_ROOT), "-o", str(out_prefix)])
         data_full = _extract_session_data(out_full.read_text())
         data_prefix = _extract_session_data(out_prefix.read_text())

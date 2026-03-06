@@ -1,7 +1,6 @@
 """LogRenderer のユニットテスト"""
-from __future__ import annotations
 
-import pytest
+from __future__ import annotations
 
 from session_analyzer.log_renderer import render_log_detail_tab
 from session_analyzer.models import (
@@ -15,10 +14,10 @@ from session_analyzer.models import (
     UserEntry,
 )
 
-
 # ---------------------------------------------------------------------------
 # テストヘルパー
 # ---------------------------------------------------------------------------
+
 
 def _make_parsed(
     main_entries=None,
@@ -58,6 +57,7 @@ def _make_user(content, timestamp="2025-01-01T00:00:00Z", is_meta=False) -> User
 # タスク 1.1: ContentBlock の種別ごとの HTML 変換
 # ---------------------------------------------------------------------------
 
+
 class TestTextBlock:
     """TextBlock をプレーンテキスト表示として変換する"""
 
@@ -91,14 +91,18 @@ class TestToolUseBlock:
 
     def test_tool_use_block_name_appears(self):
         """ToolUseBlock のツール名が HTML に含まれる"""
-        block = ToolUseBlock(type="tool_use", id="id-1", name="Bash", input={"command": "ls"})
+        block = ToolUseBlock(
+            type="tool_use", id="id-1", name="Bash", input={"command": "ls"}
+        )
         parsed = _make_parsed(main_entries=[_make_assistant([block])])
         html = render_log_detail_tab(parsed, {})
         assert "Bash" in html
 
     def test_tool_use_block_uses_details_summary(self):
         """ToolUseBlock が <details>/<summary> パターンで折りたたまれる"""
-        block = ToolUseBlock(type="tool_use", id="id-1", name="Read", input={"file_path": "/tmp/x"})
+        block = ToolUseBlock(
+            type="tool_use", id="id-1", name="Read", input={"file_path": "/tmp/x"}
+        )
         parsed = _make_parsed(main_entries=[_make_assistant([block])])
         html = render_log_detail_tab(parsed, {})
         assert "<details" in html
@@ -106,14 +110,18 @@ class TestToolUseBlock:
 
     def test_tool_use_block_input_appears(self):
         """ToolUseBlock の入力パラメータが HTML に含まれる"""
-        block = ToolUseBlock(type="tool_use", id="id-1", name="Bash", input={"command": "echo hello"})
+        block = ToolUseBlock(
+            type="tool_use", id="id-1", name="Bash", input={"command": "echo hello"}
+        )
         parsed = _make_parsed(main_entries=[_make_assistant([block])])
         html = render_log_detail_tab(parsed, {})
         assert "echo hello" in html
 
     def test_tool_use_block_xss_in_input_escaped(self):
         """ToolUseBlock の入力パラメータ内 XSS がエスケープされる"""
-        block = ToolUseBlock(type="tool_use", id="id-1", name="Write", input={"content": "<b>bold</b>"})
+        block = ToolUseBlock(
+            type="tool_use", id="id-1", name="Write", input={"content": "<b>bold</b>"}
+        )
         parsed = _make_parsed(main_entries=[_make_assistant([block])])
         html = render_log_detail_tab(parsed, {})
         assert "<b>bold</b>" not in html
@@ -132,14 +140,18 @@ class TestThinkingBlock:
 
     def test_thinking_block_content_appears(self):
         """ThinkingBlock のテキストが HTML に含まれる"""
-        block = ThinkingBlock(type="thinking", thinking="Deep thoughts here", signature="sig")
+        block = ThinkingBlock(
+            type="thinking", thinking="Deep thoughts here", signature="sig"
+        )
         parsed = _make_parsed(main_entries=[_make_assistant([block])])
         html = render_log_detail_tab(parsed, {})
         assert "Deep thoughts here" in html
 
     def test_thinking_block_xss_escaped(self):
         """ThinkingBlock の XSS がエスケープされる"""
-        block = ThinkingBlock(type="thinking", thinking="<script>evil()</script>", signature="sig")
+        block = ThinkingBlock(
+            type="thinking", thinking="<script>evil()</script>", signature="sig"
+        )
         parsed = _make_parsed(main_entries=[_make_assistant([block])])
         html = render_log_detail_tab(parsed, {})
         assert "<script>" not in html
@@ -152,7 +164,10 @@ class TestToolResultBlock:
     def test_tool_result_content_appears(self):
         """ToolResultBlock のコンテンツが HTML に含まれる"""
         block = ToolResultBlock(
-            type="tool_result", tool_use_id="id-1", content="result text", is_error=False
+            type="tool_result",
+            tool_use_id="id-1",
+            content="result text",
+            is_error=False,
         )
         parsed = _make_parsed(main_entries=[_make_user([block])])
         html = render_log_detail_tab(parsed, {})
@@ -161,7 +176,10 @@ class TestToolResultBlock:
     def test_tool_result_error_flag_shown(self):
         """ToolResultBlock の is_error=True でエラー表示が含まれる"""
         block = ToolResultBlock(
-            type="tool_result", tool_use_id="id-1", content="error output", is_error=True
+            type="tool_result",
+            tool_use_id="id-1",
+            content="error output",
+            is_error=True,
         )
         parsed = _make_parsed(main_entries=[_make_user([block])])
         html = render_log_detail_tab(parsed, {})
@@ -171,7 +189,10 @@ class TestToolResultBlock:
     def test_tool_result_xss_escaped(self):
         """ToolResultBlock の XSS がエスケープされる"""
         block = ToolResultBlock(
-            type="tool_result", tool_use_id="id-1", content="<img src=x onerror=alert()>", is_error=False
+            type="tool_result",
+            tool_use_id="id-1",
+            content="<img src=x onerror=alert()>",
+            is_error=False,
         )
         parsed = _make_parsed(main_entries=[_make_user([block])])
         html = render_log_detail_tab(parsed, {})
@@ -182,6 +203,7 @@ class TestToolResultBlock:
 # ---------------------------------------------------------------------------
 # タスク 1.2: 単一ログエントリの HTML 表示（ロール・タイムスタンプ・コンテンツ）
 # ---------------------------------------------------------------------------
+
 
 class TestRenderEntry:
     """ロール・タイムスタンプ・コンテンツを含む単一ログエントリの HTML 表示"""
@@ -228,7 +250,10 @@ class TestRenderEntry:
     def test_user_content_block_list_rendered(self):
         """user エントリの ContentBlock リストが適切に表示される"""
         block = ToolResultBlock(
-            type="tool_result", tool_use_id="id-1", content="result content", is_error=False
+            type="tool_result",
+            tool_use_id="id-1",
+            content="result content",
+            is_error=False,
         )
         parsed = _make_parsed(main_entries=[_make_user([block])])
         html = render_log_detail_tab(parsed, {})
@@ -247,12 +272,14 @@ class TestRenderEntry:
         parsed = _make_parsed(main_entries=[entry])
         html = render_log_detail_tab(parsed, {})
         # meta バッジが含まれないこと（ただし "meta-label" などのクラス名は除く）
-        assert 'badge-meta' not in html
+        assert "badge-meta" not in html
 
     def test_role_class_distinguishes_user_and_assistant(self):
         """user と assistant がロールクラスで区別される"""
         user_entry = _make_user("from user")
-        assistant_entry = _make_assistant([TextBlock(type="text", text="from assistant")])
+        assistant_entry = _make_assistant(
+            [TextBlock(type="text", text="from assistant")]
+        )
         parsed = _make_parsed(main_entries=[user_entry, assistant_entry])
         html = render_log_detail_tab(parsed, {})
         assert "role-user" in html
@@ -276,6 +303,7 @@ class TestRenderEntry:
 # ---------------------------------------------------------------------------
 # タスク 1.3: エントリリストの表示と 1,000 件超のパフォーマンス対応
 # ---------------------------------------------------------------------------
+
 
 class TestRenderLogEntries:
     """エントリリストの表示と 1,000 件超のパフォーマンス対応"""
@@ -334,6 +362,7 @@ class TestRenderLogEntries:
 # タスク 1.4: サブエージェントセクションの HTML 実装
 # ---------------------------------------------------------------------------
 
+
 class TestRenderSubagentSection:
     """サブエージェントセクションの HTML 生成"""
 
@@ -374,10 +403,12 @@ class TestRenderSubagentSection:
 
     def test_multiple_subagent_sections(self):
         """複数のサブエージェントが個別セクションで出力される"""
-        parsed = _make_parsed(subagent_entries={
-            "agent-001": [_make_user("msg from 001")],
-            "agent-002": [_make_user("msg from 002")],
-        })
+        parsed = _make_parsed(
+            subagent_entries={
+                "agent-001": [_make_user("msg from 001")],
+                "agent-002": [_make_user("msg from 002")],
+            }
+        )
         html = render_log_detail_tab(parsed, {})
         assert 'id="subagent-agent-001"' in html
         assert 'id="subagent-agent-002"' in html
@@ -385,7 +416,7 @@ class TestRenderSubagentSection:
     def test_subagent_agent_id_xss_escaped(self):
         """agent_id の XSS がアンカーでエスケープされる"""
         entry = _make_user("msg")
-        parsed = _make_parsed(subagent_entries={'<script>evil</script>': [entry]})
+        parsed = _make_parsed(subagent_entries={"<script>evil</script>": [entry]})
         html = render_log_detail_tab(parsed, {})
         assert "<script>" not in html
 
@@ -394,12 +425,18 @@ class TestRenderSubagentSection:
 # タスク 1.5: ログ詳細タブ全体を生成するメイン公開関数
 # ---------------------------------------------------------------------------
 
+
 class TestRenderLogDetailTab:
     """render_log_detail_tab のメイン公開関数テスト"""
 
     def test_agent_tool_with_link_map_shows_subagent_link(self):
         """Agent ToolUseBlock に agent_link_map が存在する場合のリンク HTML が出力される"""
-        block = ToolUseBlock(type="tool_use", id="tool-id-1", name="Agent", input={"description": "do task"})
+        block = ToolUseBlock(
+            type="tool_use",
+            id="tool-id-1",
+            name="Agent",
+            input={"description": "do task"},
+        )
         entry = _make_assistant([block])
         parsed = _make_parsed(main_entries=[entry])
         agent_link_map = {"tool-id-1": "agent-sub-001"}
@@ -409,7 +446,12 @@ class TestRenderLogDetailTab:
 
     def test_task_tool_with_link_map_shows_subagent_link(self):
         """Task ToolUseBlock に agent_link_map が存在する場合のリンク HTML が出力される"""
-        block = ToolUseBlock(type="tool_use", id="tool-id-2", name="Task", input={"description": "run task"})
+        block = ToolUseBlock(
+            type="tool_use",
+            id="tool-id-2",
+            name="Task",
+            input={"description": "run task"},
+        )
         entry = _make_assistant([block])
         parsed = _make_parsed(main_entries=[entry])
         agent_link_map = {"tool-id-2": "agent-sub-002"}
@@ -418,7 +460,12 @@ class TestRenderLogDetailTab:
 
     def test_agent_tool_without_link_map_shows_no_link(self):
         """agent_link_map に対応エントリがない場合にリンクなしで表示される"""
-        block = ToolUseBlock(type="tool_use", id="tool-id-3", name="Agent", input={"description": "do task"})
+        block = ToolUseBlock(
+            type="tool_use",
+            id="tool-id-3",
+            name="Agent",
+            input={"description": "do task"},
+        )
         entry = _make_assistant([block])
         parsed = _make_parsed(main_entries=[entry])
         html = render_log_detail_tab(parsed, {})
@@ -428,7 +475,9 @@ class TestRenderLogDetailTab:
 
     def test_non_agent_tool_gets_no_agent_launch_class(self):
         """Agent/Task 以外の ToolUseBlock に agent-launch クラスが付かない"""
-        block = ToolUseBlock(type="tool_use", id="tool-id-4", name="Bash", input={"command": "ls"})
+        block = ToolUseBlock(
+            type="tool_use", id="tool-id-4", name="Bash", input={"command": "ls"}
+        )
         entry = _make_assistant([block])
         parsed = _make_parsed(main_entries=[entry])
         html = render_log_detail_tab(parsed, {"tool-id-4": "some-key"})

@@ -1,4 +1,5 @@
 """SessionAnalyzer オーケストレーター"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -9,7 +10,12 @@ from session_analyzer.analyzers.thinking import ThinkingAnalyzer
 from session_analyzer.analyzers.token import TokenAnalyzer
 from session_analyzer.analyzers.tool import ToolAnalyzer
 from session_analyzer.discovery import LogDiscovery
-from session_analyzer.models import AssistantEntry, ParsedSession, SessionReport, ToolUseBlock
+from session_analyzer.models import (
+    AssistantEntry,
+    ParsedSession,
+    SessionReport,
+    ToolUseBlock,
+)
 from session_analyzer.parser import LogParser
 from session_analyzer.reporter import HtmlReporter
 

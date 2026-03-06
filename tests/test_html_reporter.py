@@ -1,12 +1,9 @@
 """タスク5.1: HTMLテンプレートとデザイン基盤テスト"""
-from pathlib import Path
 
-import pytest
+from pathlib import Path
 
 from session_analyzer.models import (
     AssistantEntry,
-    BashInvocation,
-    CommandAggregation,
     ParsedSession,
     SessionReport,
     SkillReport,
@@ -16,8 +13,8 @@ from session_analyzer.models import (
     TokenReport,
     TokenUsageStats,
     ToolReport,
-    UserEntry,
     UsageData,
+    UserEntry,
 )
 from session_analyzer.reporter import HtmlReporter
 
@@ -87,7 +84,13 @@ class TestHtmlReporterStructure:
         out = tmp_path / "out.html"
         HtmlReporter().generate(_make_session_report(), out)
         content = out.read_text()
-        for tab_label in ["トークン", "スキル", "ツール", "サブエージェント", "思考ログ"]:
+        for tab_label in [
+            "トークン",
+            "スキル",
+            "ツール",
+            "サブエージェント",
+            "思考ログ",
+        ]:
             assert tab_label in content, f"タブ '{tab_label}' が見つからない"
 
 
@@ -139,7 +142,12 @@ def _make_parsed_session(
     with_subagent: bool = False,
 ) -> ParsedSession:
     """テスト用の ParsedSession を構築するヘルパー"""
-    usage = UsageData(input_tokens=10, output_tokens=5, cache_creation_input_tokens=0, cache_read_input_tokens=0)
+    usage = UsageData(
+        input_tokens=10,
+        output_tokens=5,
+        cache_creation_input_tokens=0,
+        cache_read_input_tokens=0,
+    )
     main_entry = AssistantEntry(
         uuid="uuid-1",
         parent_uuid=None,
@@ -188,7 +196,9 @@ class TestHtmlReporterLogTab:
         """SESSION_DATA が SessionReport の JSON のみを含む（ParsedSession は含まれない）"""
         out = tmp_path / "out.html"
         parsed = _make_parsed_session()
-        HtmlReporter().generate(_make_session_report("data-check-session"), parsed, {}, out)
+        HtmlReporter().generate(
+            _make_session_report("data-check-session"), parsed, {}, out
+        )
         content = out.read_text()
         # SESSION_DATA に session_id は含まれる（SessionReport の一部）
         assert "data-check-session" in content
