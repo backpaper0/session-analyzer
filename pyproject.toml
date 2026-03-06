@@ -1,0 +1,21 @@
+[project]
+name = "session-analyzer"
+version = "0.1.0"
+description = "Claude Code セッションログ解析・HTML レポート生成ツール"
+requires-python = ">=3.14"
+dependencies = []
+
+[project.scripts]
+session-analyzer = "session_analyzer.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
