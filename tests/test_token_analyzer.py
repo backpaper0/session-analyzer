@@ -251,8 +251,8 @@ def test_analyze_total_cost_is_sum():
     assert result.total.estimated_cost_usd == pytest.approx(3.0 + 15.0)
 
 
-def test_analyze_total_cost_none_if_any_unknown():
-    """未知モデルが含まれる場合、totalのcostはNone（コスト不明）になること"""
+def test_analyze_total_cost_ignores_unknown():
+    """未知モデルが含まれる場合、totalのcostは既知モデル分のみ合計すること"""
     session = _make_session(
         main_entries=[
             _make_assistant("claude-sonnet-4-6", 100, 50),
@@ -261,8 +261,11 @@ def test_analyze_total_cost_none_if_any_unknown():
     )
     result = TokenAnalyzer().analyze(session)
 
-    # 未知モデルを含む場合はtotalコストはNone
-    assert result.total.estimated_cost_usd is None
+    # 未知モデルは無視し、既知モデル（sonnet）のコストのみ合計される
+    assert result.total.estimated_cost_usd is not None
+    assert result.total.estimated_cost_usd == pytest.approx(
+        100 / 1_000_000 * 3.0 + 50 / 1_000_000 * 15.0
+    )
 
 
 def test_analyze_total_model_name():

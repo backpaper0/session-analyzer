@@ -80,7 +80,7 @@ class TokenAnalyzer:
 
         by_model: list[TokenUsageStats] = []
         total_input = total_output = total_cache_create = total_cache_read = 0
-        total_cost: float | None = 0.0
+        total_cost: float = 0.0
 
         for model, (inp, out, cc, cr) in counters.items():
             cost = _calc_cost(model, inp, out, cc, cr)
@@ -98,14 +98,8 @@ class TokenAnalyzer:
             total_output += out
             total_cache_create += cc
             total_cache_read += cr
-            if cost is not None and total_cost is not None:
+            if cost is not None:
                 total_cost += cost
-            else:
-                total_cost = None
-
-        # has_unknown がある場合、total_cost を None にする
-        if has_unknown:
-            total_cost = None
 
         total = TokenUsageStats(
             model="total",
