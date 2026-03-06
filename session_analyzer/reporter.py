@@ -503,13 +503,57 @@ code {
 .log-text-content {
     padding: 14px 16px;
     font-size: 0.85rem;
-    white-space: pre-wrap;
     word-break: break-word;
     border-top: 1px solid var(--color-border);
     background: var(--color-surface);
     color: var(--color-text);
     max-height: 400px;
     overflow-y: auto;
+}
+
+.log-text-md {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    word-break: break-word;
+    padding: 2px 0;
+}
+.log-text-md p { margin: 0.4em 0; }
+.log-text-md h1,.log-text-md h2,.log-text-md h3,
+.log-text-md h4,.log-text-md h5,.log-text-md h6 {
+    margin: 0.8em 0 0.3em; font-weight: 600;
+}
+.log-text-md ul,.log-text-md ol { padding-left: 1.5em; margin: 0.4em 0; }
+.log-text-md li { margin: 0.2em 0; }
+.log-text-md code {
+    background: var(--color-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.85em;
+    font-family: monospace;
+}
+.log-text-md pre {
+    background: var(--color-bg);
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    overflow-x: auto;
+    margin: 0.5em 0;
+    border: 1px solid var(--color-border);
+}
+.log-text-md pre code { background: none; padding: 0; }
+.log-text-md blockquote {
+    border-left: 3px solid var(--color-border);
+    margin: 0.5em 0;
+    padding-left: 12px;
+    color: var(--color-text-muted);
+}
+.log-text-md table {
+    border-collapse: collapse;
+    margin: 0.5em 0;
+    font-size: 0.88em;
+}
+.log-text-md th,.log-text-md td {
+    border: 1px solid var(--color-border);
+    padding: 4px 10px;
 }
 
 .log-tool-result-content {

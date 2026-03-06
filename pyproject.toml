@@ -3,7 +3,7 @@ name = "session-analyzer"
 version = "0.1.0"
 description = "Claude Code セッションログ解析・HTML レポート生成ツール"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = ["markdown>=3.7"]
 
 [project.scripts]
 session-analyzer = "session_analyzer.__main__:main"

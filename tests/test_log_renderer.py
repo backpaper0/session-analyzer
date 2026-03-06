@@ -75,7 +75,6 @@ class TestTextBlock:
         html = render_log_detail_tab(parsed, {})
         assert "<script>" not in html
         assert "&lt;script&gt;" in html
-        assert "&quot;" in html
 
     def test_text_block_ampersand_escaped(self):
         """TextBlock の & がエスケープされる"""

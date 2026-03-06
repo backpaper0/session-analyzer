@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 
+import markdown
+
 from session_analyzer.models import (
     AssistantEntry,
     ContentBlock,
@@ -26,6 +28,13 @@ _MAX_INITIAL_ENTRIES = 200
 _LONG_CONTENT_LINES = 5
 
 
+def _render_markdown(text: str) -> str:
+    # 生のHTMLタグを無効化（XSS防止）: < と & をエスケープしてから Markdown に渡す
+    # > はエスケープしない（blockquote 構文 `> text` を保持するため）
+    safe = text.replace("&", "&amp;").replace("<", "&lt;")
+    return markdown.markdown(safe, extensions=["fenced_code", "tables"])
+
+
 def _is_long(text: str) -> bool:
     return text.count("\n") >= _LONG_CONTENT_LINES
 
@@ -43,14 +52,14 @@ def _esc(text: str) -> str:
 def _render_content_block(block: ContentBlock, agent_link_map: dict[str, str]) -> str:
     """ContentBlock バリアント別 HTML 生成"""
     if isinstance(block, TextBlock):
-        escaped = _esc(block.text)
         if _is_long(block.text):
             summary = _esc(block.text.split("\n")[0][:80])
+            md_html = _render_markdown(block.text)
             return f"""<details class="log-text-collapsible">
   <summary>テキスト: {summary}…</summary>
-  <div class="log-text-content">{escaped}</div>
+  <div class="log-text-content log-text-md">{md_html}</div>
 </details>"""
-        return f'<p class="log-text">{escaped}</p>'
+        return f'<div class="log-text-md">{_render_markdown(block.text)}</div>'
 
     if isinstance(block, ThinkingBlock):
         if block.thinking:
@@ -116,12 +125,13 @@ def _render_entry(entry: LogEntry, agent_link_map: dict[str, str]) -> str:
         if isinstance(entry.content, str):
             if _is_long(entry.content):
                 summary = _esc(entry.content.split("\n")[0][:80])
+                md_html = _render_markdown(entry.content)
                 content_html = f"""<details class="log-text-collapsible">
   <summary>テキスト: {summary}…</summary>
-  <div class="log-text-content">{_esc(entry.content)}</div>
+  <div class="log-text-content log-text-md">{md_html}</div>
 </details>"""
             else:
-                content_html = f'<p class="log-text">{_esc(entry.content)}</p>'
+                content_html = f'<div class="log-text-md">{_render_markdown(entry.content)}</div>'
         else:
             content_html = "".join(
                 _render_content_block(b, agent_link_map) for b in entry.content
