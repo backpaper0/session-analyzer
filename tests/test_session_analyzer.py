@@ -6,6 +6,7 @@ import pytest
 
 from session_analyzer.exceptions import SessionNotFoundError
 from session_analyzer.models import (
+    AssistantEntry,
     BashInvocation,
     CommandAggregation,
     InvocationMethod,
@@ -14,12 +15,16 @@ from session_analyzer.models import (
     SessionReport,
     SkillReport,
     SubAgentReport,
+    TextBlock,
     ThinkingReport,
     TokenReport,
     TokenUsageStats,
     ToolReport,
+    ToolUseBlock,
+    UsageData,
+    UserEntry,
 )
-from session_analyzer.session_analyzer import SessionAnalyzer
+from session_analyzer.session_analyzer import SessionAnalyzer, _build_agent_link_map
 
 
 def _make_session_files(tmp_path: Path) -> SessionFiles:
@@ -180,7 +185,7 @@ class TestSessionReportAssembly:
         output = tmp_path / "out.html"
         captured_report: list[SessionReport] = []
 
-        def fake_generate(r: SessionReport, p: Path) -> Path:
+        def fake_generate(r: SessionReport, parsed, agent_link_map, p: Path) -> Path:
             captured_report.append(r)
             return p
 
@@ -212,6 +217,141 @@ class TestSessionReportAssembly:
 # -----------------------------------------------------------------------
 # _run_pipeline との統合（CLI 接続）
 # -----------------------------------------------------------------------
+
+
+# -----------------------------------------------------------------------
+# _build_agent_link_map
+# -----------------------------------------------------------------------
+
+
+def _make_assistant_entry(blocks: list, timestamp: str = "2026-01-01T00:00:00Z") -> AssistantEntry:
+    """テスト用 AssistantEntry を生成するヘルパー"""
+    return AssistantEntry(
+        uuid="uuid-test",
+        parent_uuid=None,
+        timestamp=timestamp,
+        model="claude-test",
+        content=blocks,
+        usage=UsageData(),
+        agent_id=None,
+    )
+
+
+class TestBuildAgentLinkMap:
+    def test_agent_tool_use_blocks_mapped_to_subagent_keys(self) -> None:
+        """Agent ToolUseBlock が 2 件、サブエージェントキーが 2 件の場合に正しくマッピングされる"""
+        block1 = ToolUseBlock(type="tool_use", id="id-001", name="Agent", input={})
+        block2 = ToolUseBlock(type="tool_use", id="id-002", name="Agent", input={})
+        entry = _make_assistant_entry([block1, block2])
+        parsed = ParsedSession(
+            session_id="s1",
+            main_entries=[entry],
+            subagent_entries={"agent-aaa": [], "agent-bbb": []},
+        )
+
+        result = _build_agent_link_map(parsed)
+
+        assert result == {"id-001": "agent-aaa", "id-002": "agent-bbb"}
+
+    def test_task_tool_use_blocks_are_also_mapped(self) -> None:
+        """Task ToolUseBlock も Agent と同様にマッピングされる"""
+        block = ToolUseBlock(type="tool_use", id="id-task-1", name="Task", input={})
+        entry = _make_assistant_entry([block])
+        parsed = ParsedSession(
+            session_id="s2",
+            main_entries=[entry],
+            subagent_entries={"agent-ccc": []},
+        )
+
+        result = _build_agent_link_map(parsed)
+
+        assert result == {"id-task-1": "agent-ccc"}
+
+    def test_excess_agent_calls_not_in_map_when_fewer_subagents(self) -> None:
+        """Agent 呼び出し数よりサブエージェント数が少ない場合、超過分はマッピングに含まれない"""
+        block1 = ToolUseBlock(type="tool_use", id="id-a", name="Agent", input={})
+        block2 = ToolUseBlock(type="tool_use", id="id-b", name="Agent", input={})
+        block3 = ToolUseBlock(type="tool_use", id="id-c", name="Agent", input={})
+        entry = _make_assistant_entry([block1, block2, block3])
+        parsed = ParsedSession(
+            session_id="s3",
+            main_entries=[entry],
+            subagent_entries={"agent-x": []},
+        )
+
+        result = _build_agent_link_map(parsed)
+
+        assert result == {"id-a": "agent-x"}
+        assert "id-b" not in result
+        assert "id-c" not in result
+
+    def test_non_subagent_tools_not_in_map(self) -> None:
+        """Agent および Task 以外のツール呼び出しがマッピングに含まれない"""
+        bash_block = ToolUseBlock(type="tool_use", id="id-bash", name="Bash", input={})
+        agent_block = ToolUseBlock(type="tool_use", id="id-agent", name="Agent", input={})
+        read_block = ToolUseBlock(type="tool_use", id="id-read", name="Read", input={})
+        entry = _make_assistant_entry([bash_block, agent_block, read_block])
+        parsed = ParsedSession(
+            session_id="s4",
+            main_entries=[entry],
+            subagent_entries={"agent-y": []},
+        )
+
+        result = _build_agent_link_map(parsed)
+
+        assert result == {"id-agent": "agent-y"}
+        assert "id-bash" not in result
+        assert "id-read" not in result
+
+    def test_empty_main_entries_returns_empty_map(self) -> None:
+        """main_entries が空の場合に空の辞書を返す"""
+        parsed = ParsedSession(
+            session_id="s5",
+            main_entries=[],
+            subagent_entries={"agent-z": []},
+        )
+
+        result = _build_agent_link_map(parsed)
+
+        assert result == {}
+
+    def test_no_subagent_entries_returns_empty_map(self) -> None:
+        """サブエージェントエントリがない場合に空の辞書を返す"""
+        block = ToolUseBlock(type="tool_use", id="id-a1", name="Agent", input={})
+        entry = _make_assistant_entry([block])
+        parsed = ParsedSession(
+            session_id="s6",
+            main_entries=[entry],
+            subagent_entries={},
+        )
+
+        result = _build_agent_link_map(parsed)
+
+        assert result == {}
+
+    def test_user_entries_are_skipped(self) -> None:
+        """UserEntry はスキップされる（ToolUseBlock があっても無視）"""
+        user_entry = UserEntry(
+            uuid="u1",
+            parent_uuid=None,
+            timestamp="2026-01-01T00:00:00Z",
+            is_meta=False,
+            content=[ToolUseBlock(type="tool_use", id="id-user-block", name="Agent", input={})],
+            agent_id=None,
+        )
+        agent_block = ToolUseBlock(type="tool_use", id="id-assistant", name="Agent", input={})
+        assistant_entry = _make_assistant_entry([agent_block])
+        parsed = ParsedSession(
+            session_id="s7",
+            main_entries=[user_entry, assistant_entry],
+            subagent_entries={"agent-w": []},
+        )
+
+        result = _build_agent_link_map(parsed)
+
+        # AssistantEntry 内の Agent ブロックのみがマッピングされる
+        assert result == {"id-assistant": "agent-w"}
+        assert "id-user-block" not in result
 
 
 class TestCliIntegration:

@@ -7,7 +7,8 @@ from pathlib import Path
 from typing import Any
 
 from session_analyzer.exceptions import ReportGenerationError
-from session_analyzer.models import SessionReport
+from session_analyzer.log_renderer import render_log_detail_tab
+from session_analyzer.models import ParsedSession, SessionReport
 
 
 def _report_to_json(report: SessionReport) -> str:
@@ -292,6 +293,179 @@ code {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+/* ログ詳細タブ */
+.log-entries-container {
+    max-height: 600px;
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+}
+
+.log-entry {
+    border-bottom: 1px solid var(--color-border);
+    padding: 10px 14px;
+    font-size: 0.88rem;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+.log-entry-hidden {
+    display: none;
+}
+
+.log-entry-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.log-role-badge {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.role-assistant .log-role-badge {
+    background: var(--color-primary-light);
+    color: #1a3a6b;
+}
+
+.role-user .log-role-badge {
+    background: var(--color-accent-light);
+    color: #2d6a35;
+}
+
+.log-timestamp {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-family: monospace;
+}
+
+.log-model {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.log-entry-body {
+    padding-left: 4px;
+}
+
+.log-text {
+    margin: 4px 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.log-tool-use {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    margin: 4px 0;
+    overflow: hidden;
+}
+
+.log-tool-use.agent-launch {
+    border-left: 3px solid var(--color-primary);
+    background: var(--color-primary-light);
+}
+
+.agent-launch > summary {
+    background: var(--color-primary-light);
+    font-weight: 600;
+}
+
+.subagent-link {
+    font-size: 0.8rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.subagent-link:hover {
+    text-decoration: underline;
+}
+
+.log-thinking {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    margin: 4px 0;
+    overflow: hidden;
+}
+
+.tool-input {
+    padding: 10px 14px;
+    font-size: 0.82rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+    background: var(--color-bg);
+    border-top: 1px solid var(--color-border);
+    max-height: 300px;
+    overflow-y: auto;
+    margin: 0;
+}
+
+.log-tool-result {
+    padding: 6px 10px;
+    border-radius: var(--radius);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    margin: 4px 0;
+    font-size: 0.85rem;
+    word-break: break-word;
+}
+
+.tool-result-error {
+    background: var(--color-error-light);
+    border-color: var(--color-error);
+}
+
+.tool-result-content {
+    white-space: pre-wrap;
+}
+
+.show-more-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-bg);
+    color: var(--color-primary);
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-family: inherit;
+    margin-top: 8px;
+    text-align: center;
+}
+
+.show-more-btn:hover {
+    background: var(--color-primary-light);
+}
+
+.subagent-section {
+    margin-top: 20px;
+}
+
+.back-link {
+    font-size: 0.85rem;
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.badge-meta {
+    background: var(--color-warn-light);
+    color: #6b5900;
+}
 """
 
 _JS = """
@@ -302,6 +476,14 @@ function showTab(id) {
     document.querySelectorAll('.tab-panel').forEach(function(panel) {
         panel.classList.toggle('active', panel.id === id);
     });
+}
+
+function showAllLogEntries(btn) {
+    var container = btn.parentElement;
+    container.querySelectorAll('.log-entry-hidden').forEach(function(el) {
+        el.classList.remove('log-entry-hidden');
+    });
+    btn.remove();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -540,10 +722,11 @@ _TAB_DEFS = [
     ("tab-tools", "ツール"),
     ("tab-subagents", "サブエージェント"),
     ("tab-thinking", "思考ログ"),
+    ("tab-log", "ログ詳細"),
 ]
 
 
-def _build_html(report: SessionReport) -> str:
+def _build_html(report: SessionReport, log_tab_html: str = "") -> str:
     tab_btns = "".join(
         f'<button class="tab-btn" data-tab="{tid}">{label}</button>'
         for tid, label in _TAB_DEFS
@@ -555,6 +738,7 @@ def _build_html(report: SessionReport) -> str:
         "tab-tools": _render_tools_section(report),
         "tab-subagents": _render_subagents_section(report),
         "tab-thinking": _render_thinking_section(report),
+        "tab-log": log_tab_html,
     }
     tab_panels = "".join(
         f'<div id="{tid}" class="tab-panel">{panels[tid]}</div>'
@@ -585,14 +769,39 @@ const SESSION_DATA = {session_json};
 
 
 class HtmlReporter:
-    def generate(self, report: SessionReport, output_path: Path) -> Path:
+    def generate(
+        self,
+        report: SessionReport,
+        parsed: ParsedSession | None = None,
+        agent_link_map: dict[str, str] | None = None,
+        output_path: Path | None = None,
+    ) -> Path:
         """
         HTML ファイルを生成して output_path に書き込む。
+
+        Args:
+            report: セッションレポート（アナライザー出力集約）
+            parsed: パース済みセッション（ログ詳細タブの生成に使用）
+            agent_link_map: ToolUseBlock.id → サブエージェントキー のマッピング
+            output_path: 出力先ファイルパス
 
         Returns: 書き込んだファイルの絶対パス
         Raises: ReportGenerationError (PermissionError 等のラッパー)
         """
-        html = _build_html(report)
+        # 後方互換: 旧シグネチャ generate(report, output_path) を受け付ける
+        if isinstance(parsed, Path):
+            output_path = parsed
+            parsed = None
+            agent_link_map = None
+
+        if output_path is None:
+            raise ValueError("output_path は必須です")
+
+        log_tab_html = ""
+        if parsed is not None:
+            log_tab_html = render_log_detail_tab(parsed, agent_link_map or {})
+
+        html = _build_html(report, log_tab_html)
         try:
             output_path.write_text(html, encoding="utf-8")
         except OSError as exc:
