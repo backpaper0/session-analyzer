@@ -54,6 +54,9 @@ class SubAgentAnalyzer:
                 # prompt は "prompt" フィールド優先、なければ "description"
                 prompt = inp.get("prompt") or inp.get("description") or ""
                 subagent_type = inp.get("subagent_type")
+                subagent_type = (
+                    str(subagent_type) if subagent_type is not None else None
+                )
 
                 task_calls.append(
                     SubAgentInfo(

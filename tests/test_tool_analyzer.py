@@ -58,7 +58,7 @@ def _make_user_with_result(
 
 
 def _tool_use(tool_id: str, name: str, cmd: str | None = None) -> ToolUseBlock:
-    inp = {"command": cmd} if cmd else {}
+    inp: dict[str, object] = {"command": cmd} if cmd else {}
     return ToolUseBlock(type="tool_use", id=tool_id, name=name, input=inp)
 
 

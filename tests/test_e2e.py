@@ -27,7 +27,7 @@ def _is_valid_html(content: str) -> bool:
             super().__init__()
             self.ok = True
 
-        def handle_error(self, message: str) -> None:  # type: ignore[override]
+        def handle_error(self, message: str) -> None:
             self.ok = False
 
     v = _Validator()

@@ -63,6 +63,7 @@ def test_parse_assistant_usage(tmp_path):
     _write_jsonl(f, [ASSISTANT_ENTRY])
 
     entries = LogParser()._parse_file(f)[0]
+    assert isinstance(entries[0], AssistantEntry)
     usage = entries[0].usage
 
     assert isinstance(usage, UsageData)
@@ -87,10 +88,12 @@ def test_parse_assistant_text_block(tmp_path):
 
 def test_parse_assistant_tool_use_block(tmp_path):
     """assistantのtool_useブロックがToolUseBlockに変換されること"""
+    _msg = ASSISTANT_ENTRY["message"]
+    assert isinstance(_msg, dict)
     entry = {
         **ASSISTANT_ENTRY,
         "message": {
-            **ASSISTANT_ENTRY["message"],
+            **_msg,
             "content": [
                 {
                     "type": "tool_use",
@@ -115,10 +118,12 @@ def test_parse_assistant_tool_use_block(tmp_path):
 
 def test_parse_assistant_thinking_block(tmp_path):
     """assistantのthinkingブロックがThinkingBlockに変換されること"""
+    _msg2 = ASSISTANT_ENTRY["message"]
+    assert isinstance(_msg2, dict)
     entry = {
         **ASSISTANT_ENTRY,
         "message": {
-            **ASSISTANT_ENTRY["message"],
+            **_msg2,
             "content": [
                 {
                     "type": "thinking",
@@ -236,6 +241,7 @@ def test_parse_user_entry_tool_result_error(tmp_path):
     entries = LogParser()._parse_file(f)[0]
     block = entries[0].content[0]
 
+    assert isinstance(block, ToolResultBlock)
     assert block.is_error is True
 
 
@@ -246,6 +252,7 @@ def test_parse_user_is_meta_false(tmp_path):
     _write_jsonl(f, [entry])
 
     entries = LogParser()._parse_file(f)[0]
+    assert isinstance(entries[0], UserEntry)
     assert entries[0].is_meta is False
 
 

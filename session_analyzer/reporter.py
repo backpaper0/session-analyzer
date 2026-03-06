@@ -6,7 +6,7 @@ import json
 from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, overload
 
 from session_analyzer.exceptions import ReportGenerationError
 from session_analyzer.log_renderer import render_log_detail_tab
@@ -885,10 +885,26 @@ const SESSION_DATA = {session_json};
 
 
 class HtmlReporter:
+    @overload
     def generate(
         self,
         report: SessionReport,
-        parsed: ParsedSession | None = None,
+        parsed: Path,
+    ) -> Path: ...
+
+    @overload
+    def generate(
+        self,
+        report: SessionReport,
+        parsed: ParsedSession | None = ...,
+        agent_link_map: dict[str, str] | None = ...,
+        output_path: Path | None = ...,
+    ) -> Path: ...
+
+    def generate(
+        self,
+        report: SessionReport,
+        parsed: ParsedSession | Path | None = None,
         agent_link_map: dict[str, str] | None = None,
         output_path: Path | None = None,
     ) -> Path:
