@@ -14,7 +14,7 @@
 ## Key Libraries
 
 標準ライブラリのみ（`json`, `pathlib`, `dataclasses`, `argparse`, `enum`）。
-サードパーティ依存なし。テストは `pytest` を使用。
+サードパーティ依存なし。dev ツールは `pytest`（テスト）、`ruff`（lint/format）、`ty`（型チェック）。
 
 ## Development Standards
 

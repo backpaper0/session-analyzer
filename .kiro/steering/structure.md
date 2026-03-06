@@ -9,7 +9,7 @@
 
 ### Main Package (`session_analyzer/`)
 **Purpose**: 解析パイプラインの全コンポーネント
-**Pattern**: モジュール = 1 責務（discovery, parser, reporter, models, exceptions）
+**Pattern**: モジュール = 1 責務（discovery, parser, reporter, log_renderer, models, exceptions）
 
 ### Analyzers (`session_analyzer/analyzers/`)
 **Purpose**: 5 軸の独立した分析ロジック（token, skill, tool, subagent, thinking）
@@ -31,7 +31,7 @@
 
 ## Code Organization Principles
 
-- **データフロー**: `SessionFiles → ParsedSession → [XxxReport] → SessionReport → HTML`
+- **データフロー**: `SessionFiles → ParsedSession → [XxxReport] → SessionReport → HTML`（`log_renderer` がログ詳細タブ HTML 断片を生成）
 - **モデル集約**: 全ドメインオブジェクトは `models.py` に定義
 - **例外集約**: カスタム例外は `exceptions.py` のみに定義
 - **インポート**: パッケージ内は `from session_analyzer.xxx import Yyy` の絶対インポート
