@@ -515,7 +515,7 @@ code {
     font-size: 0.9rem;
     line-height: 1.6;
     word-break: break-word;
-    padding: 2px 0;
+    padding: 6px 16px;
 }
 .log-text-md p { margin: 0.4em 0; }
 .log-text-md h1,.log-text-md h2,.log-text-md h3,
