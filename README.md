@@ -75,6 +75,19 @@ uv run pytest -v
 E2E テストはプロジェクトルートの `projects/` 配下にサンプルログが必要です。
 存在しない場合は自動的にスキップされます。
 
+### コード品質
+
+```bash
+# フォーマット・lint・型チェックを実行
+mise run check
+
+# フォーマットと lint エラーを自動修正
+mise run fix
+```
+
+`mise run check` は `ruff format --check`、`ruff check`、`ty check` を順に実行します。
+`mise run fix` は `ruff format` と `ruff check --fix` でコードを自動整形・修正します。
+
 ## 動作環境
 
 - Python 3.14+
