@@ -94,6 +94,8 @@ class ParsedSession:
     session_id: str
     main_entries: list[LogEntry]
     subagent_entries: dict[str, list[LogEntry]]  # agentId -> entries
+    cwd: str | None = None            # セッション実行時のワークディレクトリ
+    last_timestamp: str | None = None  # 最後のエントリのタイムスタンプ
 
 
 # ---------------------------------------------------------------------------
@@ -196,3 +198,5 @@ class SessionReport:
     tools: ToolReport
     sub_agents: SubAgentReport
     thinking: ThinkingReport
+    cwd: str | None = None
+    last_timestamp: str | None = None

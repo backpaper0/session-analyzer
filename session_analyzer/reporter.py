@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -69,6 +70,13 @@ header h1 {
     font-weight: 600;
 }
 
+header .session-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
 header .session-id {
     font-family: monospace;
     font-size: 0.85rem;
@@ -77,6 +85,17 @@ header .session-id {
     padding: 2px 8px;
     border-radius: 4px;
     border: 1px solid var(--color-border);
+}
+
+header .session-cwd {
+    font-family: monospace;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+}
+
+header .session-time {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
 }
 
 .tab-bar {
@@ -550,6 +569,16 @@ document.addEventListener('DOMContentLoaded', function() {
 """
 
 
+def _fmt_timestamp(ts: str) -> str:
+    """ISO 8601 文字列をローカル表示形式（YYYY-MM-DD HH:MM:SS）に変換する。"""
+    try:
+        dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+        local_dt = dt.astimezone()
+        return local_dt.strftime("%Y-%m-%d %H:%M:%S")
+    except (ValueError, AttributeError):
+        return ts
+
+
 def _esc(text: str) -> str:
     return (
         text.replace("&", "&amp;")
@@ -815,7 +844,11 @@ def _build_html(report: SessionReport, log_tab_html: str = "") -> str:
 <body>
 <header>
     <h1>Session Report</h1>
-    <span class="session-id">{_esc(report.session_id)}</span>
+    <div class="session-meta">
+        <span class="session-id">{_esc(report.session_id)}</span>
+        {f'<span class="session-cwd">{_esc(report.cwd)}</span>' if report.cwd else ''}
+        {f'<span class="session-time">{_esc(_fmt_timestamp(report.last_timestamp))}</span>' if report.last_timestamp else ''}
+    </div>
 </header>
 <nav class="tab-bar">{tab_btns}</nav>
 {tab_panels}

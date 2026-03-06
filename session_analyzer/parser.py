@@ -131,12 +131,14 @@ class LogParser:
         self,
         path: Path,
         agent_id: str | None = None,
-    ) -> list[LogEntry]:
+    ) -> tuple[list[LogEntry], str | None, str | None]:
         """
-        JSONL ファイルを解析してエントリ一覧を返す。
+        JSONL ファイルを解析してエントリ一覧と (cwd, last_timestamp) を返す。
         不正 JSON は stderr に警告を出力してスキップする。
         """
         entries: list[LogEntry] = []
+        cwd: str | None = None
+        last_timestamp: str | None = None
         with path.open(encoding="utf-8") as f:
             for lineno, line in enumerate(f, start=1):
                 line = line.strip()
@@ -151,6 +153,15 @@ class LogParser:
                     )
                     continue
 
+                if cwd is None:
+                    raw_cwd = raw.get("cwd")
+                    if raw_cwd:
+                        cwd = str(raw_cwd)
+
+                raw_ts = raw.get("timestamp")
+                if raw_ts:
+                    last_timestamp = str(raw_ts)
+
                 entry_type = raw.get("type")
                 if entry_type == "assistant":
                     entry = _parse_assistant_entry(raw, agent_id)
@@ -162,23 +173,25 @@ class LogParser:
                         entries.append(entry)
                 # その他の type（progress, file-history-snapshot, system 等）はスキップ
 
-        return entries
+        return entries, cwd, last_timestamp
 
     def parse(self, files: SessionFiles) -> ParsedSession:
         """SessionFiles を解析して ParsedSession を返す"""
         session_id = files.main.stem
-        main_entries = self._parse_file(files.main, agent_id=None)
+        main_entries, cwd, last_timestamp = self._parse_file(files.main, agent_id=None)
 
         subagent_entries: dict[str, list[LogEntry]] = {}
         for sub_path in files.subagents:
             # agent-{agentId}.jsonl → agentId
             stem = sub_path.stem  # e.g. "agent-aaa111"
             agent_id = stem[len("agent-"):] if stem.startswith("agent-") else stem
-            entries = self._parse_file(sub_path, agent_id=agent_id)
+            entries, _, _ = self._parse_file(sub_path, agent_id=agent_id)
             subagent_entries[agent_id] = entries
 
         return ParsedSession(
             session_id=session_id,
             main_entries=main_entries,
             subagent_entries=subagent_entries,
+            cwd=cwd,
+            last_timestamp=last_timestamp,
         )

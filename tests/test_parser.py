@@ -42,7 +42,7 @@ def test_parse_assistant_entry(tmp_path):
     _write_jsonl(f, [ASSISTANT_ENTRY])
 
     parser = LogParser()
-    entries = parser._parse_file(f)
+    entries = parser._parse_file(f)[0]
 
     assert len(entries) == 1
     entry = entries[0]
@@ -58,7 +58,7 @@ def test_parse_assistant_usage(tmp_path):
     f = tmp_path / "session.jsonl"
     _write_jsonl(f, [ASSISTANT_ENTRY])
 
-    entries = LogParser()._parse_file(f)
+    entries = LogParser()._parse_file(f)[0]
     usage = entries[0].usage
 
     assert isinstance(usage, UsageData)
@@ -73,7 +73,7 @@ def test_parse_assistant_text_block(tmp_path):
     f = tmp_path / "session.jsonl"
     _write_jsonl(f, [ASSISTANT_ENTRY])
 
-    entries = LogParser()._parse_file(f)
+    entries = LogParser()._parse_file(f)[0]
     content = entries[0].content
 
     assert len(content) == 1
@@ -98,7 +98,7 @@ def test_parse_assistant_tool_use_block(tmp_path):
     f = tmp_path / "session.jsonl"
     _write_jsonl(f, [entry])
 
-    entries = LogParser()._parse_file(f)
+    entries = LogParser()._parse_file(f)[0]
     block = entries[0].content[0]
 
     assert isinstance(block, ToolUseBlock)
@@ -123,7 +123,7 @@ def test_parse_assistant_thinking_block(tmp_path):
     f = tmp_path / "session.jsonl"
     _write_jsonl(f, [entry])
 
-    entries = LogParser()._parse_file(f)
+    entries = LogParser()._parse_file(f)[0]
     block = entries[0].content[0]
 
     assert isinstance(block, ThinkingBlock)
@@ -137,7 +137,7 @@ def test_parse_assistant_no_parent_uuid(tmp_path):
     f = tmp_path / "session.jsonl"
     _write_jsonl(f, [entry])
 
-    entries = LogParser()._parse_file(f)
+    entries = LogParser()._parse_file(f)[0]
     assert entries[0].parent_uuid is None
 
 
@@ -161,7 +161,7 @@ def test_parse_user_entry_string_content(tmp_path):
     f = tmp_path / "session.jsonl"
     _write_jsonl(f, [USER_ENTRY_STRING])
 
-    entries = LogParser()._parse_file(f)
+    entries = LogParser()._parse_file(f)[0]
 
     assert len(entries) == 1
     entry = entries[0]
@@ -191,7 +191,7 @@ def test_parse_user_entry_tool_result_content(tmp_path):
     f = tmp_path / "session.jsonl"
     _write_jsonl(f, [entry])
 
-    entries = LogParser()._parse_file(f)
+    entries = LogParser()._parse_file(f)[0]
     block = entries[0].content[0]
 
     assert isinstance(block, ToolResultBlock)
@@ -221,7 +221,7 @@ def test_parse_user_entry_tool_result_error(tmp_path):
     f = tmp_path / "session.jsonl"
     _write_jsonl(f, [entry])
 
-    entries = LogParser()._parse_file(f)
+    entries = LogParser()._parse_file(f)[0]
     block = entries[0].content[0]
 
     assert block.is_error is True
@@ -233,7 +233,7 @@ def test_parse_user_is_meta_false(tmp_path):
     f = tmp_path / "session.jsonl"
     _write_jsonl(f, [entry])
 
-    entries = LogParser()._parse_file(f)
+    entries = LogParser()._parse_file(f)[0]
     assert entries[0].is_meta is False
 
 
@@ -250,7 +250,7 @@ def test_parse_skips_unknown_types(tmp_path):
     f = tmp_path / "session.jsonl"
     _write_jsonl(f, entries_data)
 
-    entries = LogParser()._parse_file(f)
+    entries = LogParser()._parse_file(f)[0]
     assert len(entries) == 1
     assert isinstance(entries[0], AssistantEntry)
 
@@ -266,7 +266,7 @@ def test_parse_skips_invalid_json_lines(tmp_path, capsys):
         + "not json at all\n"
     )
 
-    entries = LogParser()._parse_file(f)
+    entries = LogParser()._parse_file(f)[0]
     assert len(entries) == 1
     assert isinstance(entries[0], AssistantEntry)
 
@@ -288,7 +288,7 @@ def test_parse_empty_file(tmp_path):
     f = tmp_path / "session.jsonl"
     f.write_text("")
 
-    entries = LogParser()._parse_file(f)
+    entries = LogParser()._parse_file(f)[0]
     assert entries == []
 
 
@@ -307,7 +307,7 @@ def test_parse_multiple_entries_in_order(tmp_path):
     f = tmp_path / "session.jsonl"
     _write_jsonl(f, [user_entry, ASSISTANT_ENTRY])
 
-    entries = LogParser()._parse_file(f)
+    entries = LogParser()._parse_file(f)[0]
     assert len(entries) == 2
     assert isinstance(entries[0], UserEntry)
     assert isinstance(entries[1], AssistantEntry)

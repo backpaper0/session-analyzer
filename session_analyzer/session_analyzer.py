@@ -92,6 +92,8 @@ class SessionAnalyzer:
             tools=tool_report,
             sub_agents=subagent_report,
             thinking=thinking_report,
+            cwd=parsed.cwd,
+            last_timestamp=parsed.last_timestamp,
         )
 
         # 5. リンクマップの構築
