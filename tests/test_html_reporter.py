@@ -245,3 +245,14 @@ class TestHtmlReporterLogDetailStyle:
         out = tmp_path / "out.html"
         HtmlReporter().generate(_make_session_report(), out)
         assert "showAllLogEntries" in out.read_text()
+
+
+def test_session_data_script_tag_not_broken_by_script_closing_tag(tmp_path: Path) -> None:
+    """SESSION_DATA に </script> が含まれても script 要素が早期終了しない"""
+    report = _make_session_report(session_id="test</script>xss")
+    out = tmp_path / "out.html"
+    HtmlReporter().generate(report, out)
+    html = out.read_text(encoding="utf-8")
+    # <\/script> にエスケープされており、生の </script> が SESSION_DATA 内に存在しない
+    # (最後の正規の </script> タグは1つのみ)
+    assert html.count("</script>") == 1

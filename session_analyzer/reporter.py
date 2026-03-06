@@ -16,7 +16,8 @@ from session_analyzer.models import ParsedSession, SessionReport
 def _report_to_json(report: SessionReport) -> str:
     """SessionReport を JSON 文字列に変換する（JS 埋め込み用）"""
     raw: dict[str, Any] = asdict(report)
-    return json.dumps(raw, ensure_ascii=False, default=str)
+    # </script> がスクリプト要素を早期終了させないよう </ を <\/ にエスケープする
+    return json.dumps(raw, ensure_ascii=False, default=str).replace("</", "<\\/")
 
 
 _CSS = """
